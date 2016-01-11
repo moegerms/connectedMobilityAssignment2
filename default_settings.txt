@@ -7,8 +7,9 @@ Scenario.name = default_scenario
 Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
 # 43200s == 12h
-Scenario.endTime = 10000000
-Scenario.endTime = 43200
+#Scenario.endTime = 10000000
+#Scenario.endTime = 43200
+Scenario.endTime = 4000
 
 ## Interface-specific settings:
 # type : which interface class the interface belongs to
@@ -142,11 +143,15 @@ Events1.class = MessageEventGenerator
 # Creation interval in seconds (one new message every 25 to 35 seconds)
 #Events1.interval = 25,35
 # Creation interval in seconds (one new message every 120 to 480 seconds)
-Events1.interval = 120,480
+#Events1.interval = 120,480
+#should be 0.4 in average
+Events1.interval = 1,2
 # Message sizes (500kB - 1MB)
 #Events1.size = 500k,1M
 # Message sizes (300kB - 3MB)
-Events1.size = 300k,3M
+#Events1.size = 300k,3M
+#Request - Size
+Events1.size = 1k,1k
 # range of message source/destination addresses
 #Events1.hosts = 0,5
 #Events1.tohosts = 126,126
@@ -211,3 +216,25 @@ GUI.UnderlayImage.rotate = -0.015
 GUI.EventLogPanel.nrofEvents = 100
 # Regular Expression log filter (see Pattern-class from the Java API for RE-matching details)
 #GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$
+
+
+Report.nrofReports = 10
+Report.reportDir = reports/ConnMobReports/
+Report.report1 = FlightLengthReport
+Report.report2 = TotalContactTimeReport
+Report.report3 = ConnectivityONEReport
+Report.report4 = ContactTimesReport
+Report.report5 = InterContactTimesReport
+Report.report6 = UniqueEncountersReport
+Report.report7 = TotalEncountersReport
+Report.report8 = EncountersVSUniqueEncountersReport
+Report.report9 = ContactsDuringAnICTReport
+Report.report10 = ContactsPerHourReport
+#Report.report11 = NodeDensityReport
+
+
+#NodeDensityReport.sampleInterval = 6000
+#NodeDensityReport.outputGnuplot = true
+#NodeDensityReport.xCount = 100
+#NodeDensityReport.yCount = 100
+#NodeDensityReport.onlyAverage = true

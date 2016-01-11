@@ -187,6 +187,8 @@ public class MessageEventGenerator implements EventQueue {
 	 */
 	public ExternalEvent nextEvent() {
 		int responseSize = 0; /* zero stands for one way messages */
+		WebPages webPages = WebPages.getInstance();
+		responseSize = (int) webPages.getRandomWebPageSize();	//just test (Matthias)
 		int msgSize;
 		int interval;
 		int from;
