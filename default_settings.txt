@@ -33,7 +33,11 @@ highspeedInterface.transmitRange = 100
 celularLTEInterface.type = SimpleBroadcastInterface
 #4g LTE
 celularLTEInterface.transmitSpeed = 5M
-celularLTEInterface.transmitRange = 10000
+celularLTEInterface.transmitRange = 3000
+
+wifiHotspotInterface.type = SimpleBroadcastInterface
+wifiHotspotInterface.transmitSpeed = 10M
+wifiHotspotInterface.transmitRange = 20
 
 # Define 6 different node groups
 Scenario.nrofHostGroups = 7
@@ -74,9 +78,11 @@ Group.speed = 0.5, 1.5
 # Message TTL of 300 minutes (5 hours)
 Group.msgTtl = 300
 
-Group.nrofInterfaces = 1
+Group.nrofInterfaces = 2
 #Group.interface1 = btInterface
 Group.interface1 = celularLTEInterface
+Group.interface2 = wifiHotspotInterface
+
 
 Group.nrofHosts = 40
 
@@ -133,6 +139,281 @@ Group7.nrofHosts = 1
 Group7.nrofInterfaces = 1
 #Group7.interface1 = btInterface
 Group7.interface1 = celularLTEInterface
+#Group7.movementModel = StationaryMovement
+Group7.nodeLocation = 112, 1778
+
+
+
+Scenario.nrofHostGroups = 40
+
+Group8.groupID = HotSpot.0
+Group8.nrofHosts = 1
+Group8.movementModel = StationaryMovement
+Group8.nodeLocation = 112, 1778
+Group8.nrOfApplications = 0
+Group8.nrofInterfaces = 1
+Group8.interface1 = wifiHotspotInterface
+
+
+Group9.groupID = HotSpot.10
+Group9.nrofHosts = 1
+Group9.movementModel = StationaryMovement
+Group9.nodeLocation = 907, 1962
+Group9.nrOfApplications = 0
+Group9.nrofInterfaces = 1
+Group9.interface1 = wifiHotspotInterface
+
+Group10.groupID = HotSpot.20
+Group10.nrofHosts = 1
+Group10.movementModel = StationaryMovement
+Group10.nodeLocation = 914, 1611
+Group10.nrOfApplications = 0
+Group10.nrofInterfaces = 1
+Group10.interface1 = wifiHotspotInterface
+
+Group11.groupID = HotSpot.30
+Group11.nrofHosts = 1
+Group11.movementModel = StationaryMovement
+Group11.nodeLocation = 1035, 585
+Group11.nrOfApplications = 0
+Group11.nrofInterfaces = 1
+Group11.interface1 = wifiHotspotInterface
+
+Group12.groupID = HotSpot.40
+Group12.nrofHosts = 1
+Group12.movementModel = StationaryMovement
+Group12.nodeLocation = 1235, 259
+Group12.nrOfApplications = 0
+Group12.nrofInterfaces = 1
+Group12.interface1 = wifiHotspotInterface
+
+Group13.groupID = HotSpot.50
+Group13.nrofHosts = 1
+Group13.movementModel = StationaryMovement
+Group13.nodeLocation = 1643, 1756
+Group13.nrOfApplications = 0
+Group13.nrofInterfaces = 1
+Group13.interface1 = wifiHotspotInterface
+
+Group14.groupID = HotSpot.60
+Group14.nrofHosts = 1
+Group14.movementModel = StationaryMovement
+Group14.nodeLocation = 1345, 1591
+Group14.nrOfApplications = 0
+Group14.nrofInterfaces = 1
+Group14.interface1 = wifiHotspotInterface
+
+Group15.groupID = HotSpot.70
+Group15.nrofHosts = 1
+Group15.movementModel = StationaryMovement
+Group15.nodeLocation = 1349, 1461
+Group15.nrOfApplications = 0
+Group15.nrofInterfaces = 1
+Group15.interface1 = wifiHotspotInterface
+
+Group16.groupID = HotSpot.80
+Group16.nrofHosts = 1
+Group16.movementModel = StationaryMovement
+Group16.nodeLocation = 1754, 1287
+Group16.nrOfApplications = 0
+Group16.nrofInterfaces = 1
+Group16.interface1 = wifiHotspotInterface
+
+Group17.groupID = HotSpot.90
+Group17.nrofHosts = 1
+Group17.movementModel = StationaryMovement
+Group17.nodeLocation = 1685, 1155
+Group17.nrOfApplications = 0
+Group17.nrofInterfaces = 1
+Group17.interface1 = wifiHotspotInterface
+
+Group18.groupID = HotSpot.100
+Group18.nrofHosts = 1
+Group18.movementModel = StationaryMovement
+Group18.nodeLocation = 1758, 1032
+Group18.nrOfApplications = 0
+Group18.nrofInterfaces = 1
+Group18.interface1 = wifiHotspotInterface
+
+Group19.groupID = HotSpot.110
+Group19.nrofHosts = 1
+Group19.movementModel = StationaryMovement
+Group19.nodeLocation = 1450, 737
+Group19.nrOfApplications = 0
+Group19.nrofInterfaces = 1
+Group19.interface1 = wifiHotspotInterface
+
+Group20.groupID = HotSpot.120
+Group20.nrofHosts = 1
+Group20.movementModel = StationaryMovement
+Group20.nodeLocation = 1713, 496
+Group20.nrOfApplications = 0
+Group20.nrofInterfaces = 1
+Group20.interface1 = wifiHotspotInterface
+
+Group21.groupID = HotSpot.130
+Group21.nrofHosts = 1
+Group21.movementModel = StationaryMovement
+Group21.nodeLocation = 1243, 284
+Group21.nrOfApplications = 0
+Group21.nrofInterfaces = 1
+Group21.interface1 = wifiHotspotInterface
+
+Group22.groupID = HotSpot.140
+Group22.nrofHosts = 1
+Group22.movementModel = StationaryMovement
+Group22.nodeLocation = 2297, 2346
+Group22.nrOfApplications = 0
+Group22.nrofInterfaces = 1
+Group22.interface1 = wifiHotspotInterface
+
+Group23.groupID = HotSpot.150
+Group23.nrofHosts = 1
+Group23.movementModel = StationaryMovement
+Group23.nodeLocation = 2068, 2147
+Group23.nrOfApplications = 0
+Group23.nrofInterfaces = 1
+Group23.interface1 = wifiHotspotInterface
+
+Group24.groupID = HotSpot.160
+Group24.nrofHosts = 1
+Group24.movementModel = StationaryMovement
+Group24.nodeLocation = 2144, 1969
+Group24.nrOfApplications = 0
+Group24.nrofInterfaces = 1
+Group24.interface1 = wifiHotspotInterface
+
+Group25.groupID = HotSpot.170
+Group25.nrofHosts = 1
+Group25.movementModel = StationaryMovement
+Group25.nodeLocation = 2341, 1882
+Group25.nrOfApplications = 0
+Group25.nrofInterfaces = 1
+Group25.interface1 = wifiHotspotInterface
+
+Group26.groupID = HotSpot.180
+Group26.nrofHosts = 1
+Group26.movementModel = StationaryMovement
+Group26.nodeLocation = 2104, 1726
+Group26.nrOfApplications = 0
+Group26.nrofInterfaces = 1
+Group26.interface1 = wifiHotspotInterface
+
+Group27.groupID = HotSpot.190
+Group27.nrofHosts = 1
+Group27.movementModel = StationaryMovement
+Group27.nodeLocation = 2261, 1574
+Group27.nrOfApplications = 0
+Group27.nrofInterfaces = 1
+Group27.interface1 = wifiHotspotInterface
+
+Group28.groupID = HotSpot.200
+Group28.nrofHosts = 1
+Group28.movementModel = StationaryMovement
+Group28.nodeLocation = 2196, 1478
+Group28.nrOfApplications = 0
+Group28.nrofInterfaces = 1
+Group28.interface1 = wifiHotspotInterface
+
+Group29.groupID = HotSpot.210
+Group29.nrofHosts = 1
+Group29.movementModel = StationaryMovement
+Group29.nodeLocation = 2273, 1307
+Group29.nrOfApplications = 0
+Group29.nrofInterfaces = 1
+Group29.interface1 = wifiHotspotInterface
+
+Group30.groupID = HotSpot.220
+Group30.nrofHosts = 1
+Group30.movementModel = StationaryMovement
+Group30.nodeLocation = 1987, 756
+Group30.nrOfApplications = 0
+Group30.nrofInterfaces = 1
+Group30.interface1 = wifiHotspotInterface
+
+Group31.groupID = HotSpot.230
+Group31.nrofHosts = 1
+Group31.movementModel = StationaryMovement
+Group31.nodeLocation = 2541, 2295
+Group31.nrOfApplications = 0
+Group31.nrofInterfaces = 1
+Group31.interface1 = wifiHotspotInterface
+
+Group32.groupID = HotSpot.240
+Group32.nrofHosts = 1
+Group32.movementModel = StationaryMovement
+Group32.nodeLocation = 2927, 2054
+Group32.nrOfApplications = 0
+Group32.nrofInterfaces = 1
+Group32.interface1 = wifiHotspotInterface
+
+Group33.groupID = HotSpot.250
+Group33.nrofHosts = 1
+Group33.movementModel = StationaryMovement
+Group33.nodeLocation = 2645, 1776
+Group33.nrOfApplications = 0
+Group33.nrofInterfaces = 1
+Group33.interface1 = wifiHotspotInterface
+
+Group34.groupID = HotSpot.260
+Group34.nrofHosts = 1
+Group34.movementModel = StationaryMovement
+Group34.nodeLocation = 2394, 1226
+Group34.nrOfApplications = 0
+Group34.nrofInterfaces = 1
+Group34.interface1 = wifiHotspotInterface
+
+Group35.groupID = HotSpot.270
+Group35.nrofHosts = 1
+Group35.movementModel = StationaryMovement
+Group35.nodeLocation = 2453, 578
+Group35.nrOfApplications = 0
+Group35.nrofInterfaces = 1
+Group35.interface1 = wifiHotspotInterface
+
+Group36.groupID = HotSpot.280
+Group36.nrofHosts = 1
+Group36.movementModel = StationaryMovement
+Group36.nodeLocation = 3189, 601
+Group36.nrOfApplications = 0
+Group36.nrofInterfaces = 1
+Group36.interface1 = wifiHotspotInterface
+
+Group37.groupID = HotSpot.290
+Group37.nrofHosts = 1
+Group37.movementModel = StationaryMovement
+Group37.nodeLocation = 3263, 424
+Group37.nrOfApplications = 0
+Group37.nrofInterfaces = 1
+Group37.interface1 = wifiHotspotInterface
+
+Group38.groupID = HotSpot.300
+Group38.nrofHosts = 1
+Group38.movementModel = StationaryMovement
+Group38.nodeLocation = 2989, 233
+Group38.nrOfApplications = 0
+Group38.nrofInterfaces = 1
+Group38.interface1 = wifiHotspotInterface
+
+Group39.groupID = HotSpot.310
+Group39.nrofHosts = 1
+Group39.movementModel = StationaryMovement
+Group39.nodeLocation = 3718, 1259
+Group39.nrOfApplications = 0
+Group39.nrofInterfaces = 1
+Group39.interface1 = wifiHotspotInterface
+
+Group40.groupID = HotSpot.320
+Group40.nrofHosts = 1
+Group40.movementModel = StationaryMovement
+Group40.nodeLocation = 4147, 1204
+Group40.nrOfApplications = 0
+Group40.nrofInterfaces = 1
+Group40.interface1 = wifiHotspotInterface
+
+
+
+
 
 ## Message creation parameters
 # How many event generators
@@ -218,8 +499,8 @@ GUI.EventLogPanel.nrofEvents = 100
 #GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$
 
 
-Report.nrofReports = 10
-Report.reportDir = reports/ConnMobReports/
+Report.nrofReports = 11
+Report.reportDir = reports/ConnMobReports2/
 Report.report1 = FlightLengthReport
 Report.report2 = TotalContactTimeReport
 Report.report3 = ConnectivityONEReport
@@ -238,3 +519,19 @@ Report.report10 = ContactsPerHourReport
 #NodeDensityReport.xCount = 100
 #NodeDensityReport.yCount = 100
 #NodeDensityReport.onlyAverage = true
+
+
+# Define new application
+pingApp.type = PingApplication
+pingApp.interval = 500
+pingApp.destinationRange = 0,125
+pingApp.pingSize = 5
+pingApp.pongSize = 5
+pingApp.passive = false
+
+# Set Ping app for all nodes
+Group.nrofApplications = 1
+Group.application1 = pingApp
+
+# Add report for Ping app
+Report.report11 = PingAppReporter

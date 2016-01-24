@@ -1,0 +1,9 @@
+Ping stats for scenario default_scenario
+sim_time: 4000.1000
+pings sent: 1280
+pings received: 882
+pongs sent: 882
+pongs received: 236
+ping delivery prob: 0.6891
+pong delivery prob: 0.2676
+ping/pong success prob: 0.1844
