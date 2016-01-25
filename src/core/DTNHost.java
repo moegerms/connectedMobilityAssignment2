@@ -36,6 +36,14 @@ public class DTNHost implements Comparable<DTNHost> {
 	private List<NetworkInterface> net;
 	private ModuleCommunicationBus comBus;
 
+
+	public enum TypeOfHost{
+		REGULAR_HOST, WIFI_HOTSPOT, CELLULAR_BASE
+	}
+	private TypeOfHost typeOfHost;
+
+
+
 	static {
 		DTNSim.registerForReset(DTNHost.class.getCanonicalName());
 		reset();
@@ -89,6 +97,12 @@ public class DTNHost implements Comparable<DTNHost> {
 				l.initialLocation(this, this.location);
 			}
 		}
+		if(groupId.equals("z"))
+			typeOfHost = TypeOfHost.CELLULAR_BASE;
+		else if(groupId.equals("p") || groupId.equals("c"))
+			typeOfHost = TypeOfHost.REGULAR_HOST;
+		else
+			typeOfHost = TypeOfHost.WIFI_HOTSPOT;
 	}
 
 	/**
@@ -165,6 +179,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @param con  The connection object whose state changed
 	 */
 	public void connectionUp(Connection con) {
+
 		System.out.println("Conn up: "+con.toString());
 		System.out.println("Connection up: "+this.name);
 		this.router.changedConnection(con);

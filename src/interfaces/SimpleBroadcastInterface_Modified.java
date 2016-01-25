@@ -4,23 +4,23 @@
  */
 package interfaces;
 
-import java.util.Collection;
-
 import core.CBRConnection;
 import core.Connection;
 import core.NetworkInterface;
 import core.Settings;
 
+import java.util.Collection;
+
 /**
  * A simple Network Interface that provides a constant bit-rate service, where
  * one transmission can be on at a time.
  */
-public class SimpleBroadcastInterface extends NetworkInterface {
+public class SimpleBroadcastInterface_Modified extends NetworkInterface {
 
 	/**
 	 * Reads the interface settings from the Settings file
 	 */
-	public SimpleBroadcastInterface(Settings s)	{
+	public SimpleBroadcastInterface_Modified(Settings s)	{
 		super(s);
 	}
 
@@ -28,12 +28,12 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 	 * Copy constructor
 	 * @param ni the copied network interface object
 	 */
-	public SimpleBroadcastInterface(SimpleBroadcastInterface ni) {
+	public SimpleBroadcastInterface_Modified(SimpleBroadcastInterface_Modified ni) {
 		super(ni);
 	}
 
 	public NetworkInterface replicate()	{
-		return new SimpleBroadcastInterface(this);
+		return new SimpleBroadcastInterface_Modified(this);
 	}
 
 	/**
@@ -53,9 +53,9 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 			if (conSpeed > this.transmitSpeed) {
 				conSpeed = this.transmitSpeed;
 			}
-			//if(!this.host.getName().equals("z0")){
-			//	return;
-			//}
+			if(!this.host.getName().equals("z0")){
+				return;
+			}
 			Connection con = new CBRConnection(this.host, this,
 					anotherInterface.getHost(), anotherInterface, conSpeed);
 			connect(con,anotherInterface);
