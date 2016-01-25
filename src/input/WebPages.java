@@ -99,7 +99,7 @@ public class WebPages {
         return result;
     }
 
-    public double getRandomWebPageSize (){
+    /*public double getRandomWebPageSize (){
         double randValue = 0;
         int j = 0;
         randValue = rand.nextDouble();
@@ -109,5 +109,37 @@ public class WebPages {
             }
         }
         return webPages.get(j);
+    }*/
+    public int getRandomWebPageNumber (){
+
+        double randValue = 0;
+        int j = 0;
+        randValue = rand.nextDouble();
+        for(j = 1; j<= numberOfWebpages; j++){
+            if(randValue < webPagesZipf.get(j)){
+                break;
+            }
+        }
+        return j;
+    }
+
+    public WebPage getRandomWebPage (){
+
+        double randValue = 0;
+        int j = 0;
+        randValue = rand.nextDouble();
+        for(j = 1; j<= numberOfWebpages; j++){
+            if(randValue < webPagesZipf.get(j)){
+                break;
+            }
+        }
+        double size = webPages.get(j);
+        WebPage webPage = new WebPage(j, (int) size );
+        return webPage;
+    }
+
+    public int getWebPage(int webpageNumber) {
+        double size = webPages.get(webpageNumber);
+        return (int) size;
     }
 }

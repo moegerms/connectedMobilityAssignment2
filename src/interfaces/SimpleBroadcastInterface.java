@@ -53,7 +53,7 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 			if (conSpeed > this.transmitSpeed) {
 				conSpeed = this.transmitSpeed;
 			}
-			if(!this.host.getName().equals("z126")){
+			if(!this.host.getName().equals("z0")){
 				return;
 			}
 			Connection con = new CBRConnection(this.host, this,
