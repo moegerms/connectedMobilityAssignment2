@@ -59,10 +59,8 @@ public class PingApplication extends Application {
 	private int		pingSize=1;
 	//private int		pongSize=1;
 	private Random	rng;
-
-	private boolean caching = true;
-	private	LinkedList cache = new LinkedList();
-	private int cacheEntries = 10;
+	private int cellularDelay = 300;
+	private int requestedWebPageNumber = 0;
 
 	/**
 	 * Creates a new ping application with the given settings.
@@ -98,22 +96,7 @@ public class PingApplication extends Application {
 		this.interval = drawNextHomepageRequest();
 		super.setAppID(APP_ID);
 	}
-	private void addToCache(int key, int size){
-		WebPage webPage = new WebPage(key,size);
-		for(int i = 0; i< cache.size(); i++){
-			if(((WebPage) cache.get(i)).getWebPageNumber() == key){
-				cache.remove(i);
-			}
-		}
-		cache.addFirst(webPage);
-		if(cache.size()> cacheEntries){
-			cache.removeLast();
-		}
-		/*System.out.println("queue "+Arrays.toString(cache.toArray()));
-		for(int i = 0; i< cache.size(); i++){
-			System.out.println(""+i+" PageNumber: "+((WebPage) cache.get(i)).getWebPageNumber()+" PageSize: "+((WebPage) cache.get(i)).getWebPageSize());
-		}*/
-	}
+
 
 	private int drawNextHomepageRequest(){
 		//rng.setSeed((int)(SimClock.getTime()*10));
@@ -155,7 +138,6 @@ public class PingApplication extends Application {
 	 */
 	@Override
 	public Message handle(Message msg, DTNHost host) {
-		//System.out.println("handle");
 		String type = (String)msg.getProperty("type");
 		if (type==null) return msg; // Not a ping/pong message
 
@@ -163,6 +145,21 @@ public class PingApplication extends Application {
 		if (msg.getTo()==host && type.equalsIgnoreCase("ping")) {
 			int webpageNumber = (int)msg.getProperty("webpageNumber");
 			int webpageSize = webPages.getWebPage(webpageNumber);
+
+			if(host.getName().startsWith("p")){
+				//Check pedestrians cache
+				if(host.useCache()) {
+					if(host.findWebPageInCache(webpageNumber) == webpageSize){
+						//continue to send back the chached site
+					}else{
+						return msg;
+					}
+				}else{
+					return msg;
+				}
+			}
+
+
 
 			//String id = "pong" + SimClock.getIntTime() + "-" +
 			String id = "pong" + (int) (SimClock.getTime()*10) + "-" +
@@ -173,7 +170,7 @@ public class PingApplication extends Application {
 			m.addProperty("webpageNumber", webpageNumber);
 			host.createNewMessage(m);
 
-			//System.out.println("send pong from:"+m.getFrom().getName()+" \tto:  "+m.getTo().getName() +" \tsize: "+m.getSize()+ " \tttl "+m.getTtl()+" \tid "+m.getId()+" \thop count "+m.getHopCount());
+		//	System.out.println("send pong from:"+m.getFrom().getName()+" \tto:  "+m.getTo().getName() +" \tsize: "+m.getSize()+ " \tttl "+m.getTtl()+" \tid "+m.getId()+" \thop count "+m.getHopCount());
 			// Send event to listeners
 			super.sendEventToListeners("GotPing", null, host);
 			super.sendEventToListeners("SentPong", null, host);
@@ -181,17 +178,21 @@ public class PingApplication extends Application {
 
 		// Received a pong reply
 		if (msg.getTo()==host && type.equalsIgnoreCase("pong")) {
-			// Send event to listeners
-
-			//System.out.println("receive pong from:"+msg.getFrom().getName()+" to: "+msg.getTo().getName() +" size: "+msg.getSize()+"\tid "+msg.getId());
-			System.out.println(""+((int) msg.getProperty("webpageNumber"))+","+msg.getSize());
-			if(caching) {
-				addToCache((int) msg.getProperty("webpageNumber"), msg.getSize());
-			}
-			super.sendEventToListeners("GotPong", null, host);
+			receivePong(host,msg);
 		}
 
 		return msg;
+	}
+	private void receivePong(DTNHost host, Message msg){
+		//if(msg.getFrom().getName().startsWith("p") && msg.getTo().getName().startsWith("p"))
+		//System.out.println("receive pong from:"+msg.getFrom().getName()+" to: "+msg.getTo().getName() +" size: "+msg.getSize()+"\tid "+msg.getId());
+		//System.out.println(""+((int) msg.getProperty("webpageNumber"))+","+msg.getSize());
+		if(host.useCache()) {
+			host.addToCache((int) msg.getProperty("webpageNumber"), msg.getSize());
+		}
+		host.setWaitForReply(false);
+		// Send event to listeners
+		super.sendEventToListeners("GotPong", null, host);
 	}
 
 	/**
@@ -199,7 +200,7 @@ public class PingApplication extends Application {
 	 *
 	 * @return host
 	 */
-	private DTNHost randomHost() {
+	/*private DTNHost randomHost() {
 		int destaddr = 0;
 		if (destMax == destMin) {
 			destaddr = destMin;
@@ -207,47 +208,67 @@ public class PingApplication extends Application {
 		destaddr = destMin + rng.nextInt(destMax - destMin);
 		World w = SimScenario.getInstance().getWorld();
 		return w.getNodeByAddress(destaddr);
-	}
+	}*/
 
-	private int cellularHost = 0;
-	private DTNHost getCellularHost(){
-		World w = SimScenario.getInstance().getWorld();
-		return w.getNodeByAddress(cellularHost);
-	}
 
 	@Override
 	public Application replicate() {
 		return new PingApplication(this);
 	}
 
+	private void createNewRequest(){
+		requestedWebPageNumber = webPages.getRandomWebPageNumber();
+
+
+	}
 	/**
 	 * Sends a ping packet if this is an active application instance.
 	 *
 	 * @param host to which the application instance is attached
 	 */
-	@Override
+	//@Override
 	public void update(DTNHost host) {
 		//System.out.println(this);
 		if (this.passive) return;
 		double curTime = SimClock.getTime();
 		if (curTime - this.lastPing >= this.interval) {
-			// Time to send a new ping
-			Message m = new Message(host, getCellularHost(), "ping" +
-					SimClock.getIntTime() + "-" + host.getAddress(),
-					getPingSize());
-			m.addProperty("type", "ping");
-			m.addProperty("webpageNumber", webPages.getRandomWebPageNumber());
-			m.setAppID(APP_ID);
-			host.createNewMessage(m);
+			createNewRequest();
 
-			//System.out.println("Send ping");
+			if(host.useCache()) {
+				//Local cache
+				int webPageSize = host.findWebPageInCache(requestedWebPageNumber);
+				if (webPageSize > 0) {
+					//Webpage still in cache
+					String id = "pong" + (int) (SimClock.getTime() * 10) + "-" +
+							host.getAddress();
+					Message m = new Message(host, host, id, webPageSize);
+					m.addProperty("type", "pong");
+					m.setAppID(APP_ID);
+					m.addProperty("webpageNumber", requestedWebPageNumber);
+					receivePong(host, m);        //Use a message from,to itself
+				} else {
+					//Check on all available nodes
+					host.sendWebPageRequests(pingSize, curTime, requestedWebPageNumber, APP_ID);
+				}
+			}else{
+
+				//Check on all available nodes
+				host.sendWebPageRequests(pingSize, curTime, requestedWebPageNumber, APP_ID);
+			}
 
 			// Call listeners
 			super.sendEventToListeners("SentPing", null, host);
-
 			this.interval = drawNextHomepageRequest();
 			this.lastPing = curTime;
+
 		}
+	}
+
+
+	private int cellularHost = 0;
+	private DTNHost getCellularHost(){
+		World w = SimScenario.getInstance().getWorld();
+		return w.getNodeByAddress(cellularHost);
 	}
 
 	/**

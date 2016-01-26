@@ -118,6 +118,13 @@ public class SimScenario implements Serializable {
 	/** Global application event listeners */
 	private List<ApplicationListener> appListeners;
 
+	/** namespace of scenario settings ({@value})*/
+	public static final String DEMO_CASE = "demo_case";
+	/** namespace of scenario settings ({@value})*/
+	public static final String CACHING = "caching";
+	/** namespace of scenario settings ({@value})*/
+	public static final String CACHE_ENTRIES = "cacheEntries";
+
 	static {
 		DTNSim.registerForReset(SimScenario.class.getCanonicalName());
 		reset();
@@ -398,6 +405,15 @@ public class SimScenario implements Serializable {
 				DTNHost host = new DTNHost(this.messageListeners,
 						this.movementListeners,	gid, interfaces, comBus,
 						mmProto, mRouterProto);
+				if (s.contains(DEMO_CASE)){
+					host.setDemoCase(s.getInt(this.DEMO_CASE));
+				}
+				if (s.contains(CACHING)){
+					host.setCaching(s.getBoolean(this.CACHING));
+				}
+				if (s.contains(CACHE_ENTRIES)){
+					host.setCacheEntries(s.getInt(this.CACHE_ENTRIES));
+				}
 				hosts.add(host);
 			}
 		}
