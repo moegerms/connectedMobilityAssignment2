@@ -7,6 +7,9 @@ Scenario.name = default_scenario
 Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
 # 43200s == 12h
+
+#Run 10 simulation runs for 12 hours each per scenario (1h warmup, which has to be excluded)
+
 #Scenario.endTime = 10000000
 #Scenario.endTime = 43200
 Scenario.endTime = 4000
@@ -87,7 +90,7 @@ Group.interface2 = wifiHotspotInterface
 
 Group.demo_case = 0
 Group.caching = false
-Group.cacheEntries = 0
+Group.cacheEntries = 10
 
 Group1.groupID = z
 Group1.bufferSize = 50M
@@ -510,19 +513,21 @@ Report.report10 = ContactsPerHourReport
 pingApp.type = PingApplication
 #pingApp.interval = 500 <-- is now done by random
 pingApp.destinationRange = 1,20
-pingApp.pingSize = 5
-pingApp.pongSize = 5
+pingApp.pingSize = 1000
 pingApp.passive = false
 
 # Define new application
 pingApp_passive.type = PingApplication
 #pingApp_passive.interval = 500 <-- is now done by random
 pingApp_passive.destinationRange = 1,20
-pingApp_passive.pingSize = 5
-pingApp_passive.pongSize = 5
+pingApp_passive.pingSize = 1000
 pingApp_passive.passive = true
 
 
 
 # Add report for Ping app
 Report.report11 = PingAppReporter
+
+#Report on:
+#Response Times: mean, median, 95%-­tile, min, and max
+#Offloading share and ratio (per node, overall): • #requests, #bytes; • mean, median, 95%-­tile, min, and max

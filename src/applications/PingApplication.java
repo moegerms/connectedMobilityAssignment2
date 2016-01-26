@@ -43,8 +43,6 @@ public class PingApplication extends Application {
 	public static final String PING_SEED = "seed";
 	/** Size of the ping message */
 	public static final String PING_PING_SIZE = "pingSize";
-	/** Size of the pong message */
-	public static final String PING_PONG_SIZE = "pongSize";
 
 	/** Application ID */
 	public static final String APP_ID = "fi.tkk.netlab.PingApplication";
@@ -57,7 +55,6 @@ public class PingApplication extends Application {
 	private int		destMin=0;
 	private int		destMax=1;
 	private int		pingSize=1;
-	//private int		pongSize=1;
 	private Random	rng;
 	private int cellularDelay = 300;
 	private int requestedWebPageNumber = 0;
@@ -83,9 +80,6 @@ public class PingApplication extends Application {
 		if (s.contains(PING_PING_SIZE)) {
 			this.pingSize = s.getInt(PING_PING_SIZE);
 		}
-		//if (s.contains(PING_PONG_SIZE)) {
-		//	this.pongSize = s.getInt(PING_PONG_SIZE);
-		//}
 		if (s.contains(PING_DEST_RANGE)){
 			int[] destination = s.getCsvInts(PING_DEST_RANGE,2);
 			this.destMin = destination[0];
@@ -123,7 +117,6 @@ public class PingApplication extends Application {
 		this.destMax = a.getDestMax();
 		this.destMin = a.getDestMin();
 		this.seed = a.getSeed();
-		//this.pongSize = a.getPongSize();
 		this.pingSize = a.getPingSize();
 		this.rng = new Random(this.seed);
 		this.interval = drawNextHomepageRequest();
@@ -355,21 +348,8 @@ public class PingApplication extends Application {
 		this.seed = seed;
 	}
 
-	/**
-	 * @return the pongSize
-	 */
 	private static WebPages webPages = new WebPages();
-	/*public int getPongSize() {
-		pongSize = (int) webPages.getRandomWebPageSize();
-		return pongSize;
-	}*/
 
-	/**
-	 * @param pongSize the pongSize to set
-	 */
-	/*public void setPongSize(int pongSize) {
-		this.pongSize = pongSize;
-	}*/
 
 	/**
 	 * @return the pingSize
