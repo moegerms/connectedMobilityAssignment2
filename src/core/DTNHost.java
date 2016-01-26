@@ -80,13 +80,11 @@ public class DTNHost implements Comparable<DTNHost> {
 		transmit_hotspot = null;
 		transmit_pedestrian = null;
 		updateTransmit();
-
 	}
 	public void updateTransmit(){
-		if(!getWaitForReply()) return;
+		if(!getWaitForReply()) return;		//Not linked to a message, just an open need for a website
 		switch(demo_case){
 			case 0:
-				//50% cellular network only, together with case 2
 				if(transmit_cellular == null) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
 					transmit_cellular.transmitNewPageRequest();
@@ -117,7 +115,7 @@ public class DTNHost implements Comparable<DTNHost> {
 					transmit_hotspot.transmitNewPageRequest();
 				}
 				//Wait a short period of time for wifi, then use cellular network or use cellular direct, if not on wifi
-				if(transmit_cellular == null && (this.getHotSpotConnections().size() == 0 || ((SimClock.getTime() - curTime)>10))) {
+				if(transmit_cellular == null && this.getHotSpotConnections().size() == 0) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
 					transmit_cellular.transmitNewPageRequest();
 				}

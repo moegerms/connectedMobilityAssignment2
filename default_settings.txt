@@ -90,7 +90,7 @@ Group.interface2 = wifiHotspotInterface
 
 Group.demo_case = 0
 Group.caching = false
-Group.cacheEntries = 10
+Group.cacheEntries = 0
 
 Group1.groupID = z
 Group1.bufferSize = 50M
@@ -117,13 +117,20 @@ Group4.nrofHosts = 0
 Group4.groupID = a
 Group5.nrofHosts = 0
 Group5.groupID = a
-Group6.nrofHosts = 0
-Group6.groupID = a
+
+# group6 (pedestrians) specific settings
+Group6.groupID = p
+Group6.nrofHosts = 100
+# Set Ping app for all nodes
+Group6.nrofApplications = 1
+Group6.application1 = pingApp
+Group6.demo_case = 2
+Group6.caching = false
+Group6.cacheEntries = 100
 
 # group7 (pedestrians) specific settings
 Group7.groupID = p
-Group7.nrofHosts = 200
-#200
+Group7.nrofHosts = 100
 # Set Ping app for all nodes
 Group7.nrofApplications = 1
 Group7.application1 = pingApp
