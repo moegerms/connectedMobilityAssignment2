@@ -139,11 +139,12 @@ public class PingApplication extends Application {
 			int webpageNumber = (int)msg.getProperty("webpageNumber");
 			int webpageSize = webPages.getWebPage(webpageNumber);
 
-			if(host.getName().startsWith("p")){
+			//if(host.getName().startsWith("p")){
+            if(host.getTypeOfHost() == DTNHost.TypeOfHost.REGULAR_HOST){
 				//Check pedestrians cache
 				if(host.useCache()) {
 					if(host.findWebPageInCache(webpageNumber) == webpageSize){
-						//continue to send back the chached site
+						//TODO: continue to send back the chached site
 					}else{
 						return msg;
 					}
@@ -161,12 +162,13 @@ public class PingApplication extends Application {
 			m.addProperty("type", "pong");
 			m.setAppID(APP_ID);
 			m.addProperty("webpageNumber", webpageNumber);
+			m.setRequest(msg);
 			host.createNewMessage(m);
 
-		//	System.out.println("send pong from:"+m.getFrom().getName()+" \tto:  "+m.getTo().getName() +" \tsize: "+m.getSize()+ " \tttl "+m.getTtl()+" \tid "+m.getId()+" \thop count "+m.getHopCount());
+			//System.out.println("send pong from:"+m.getFrom().getName()+" \tto:  "+m.getTo().getName() +" \tsize: "+m.getSize()+ " \tttl "+m.getTtl()+" \tid "+m.getId()+" \thop count "+m.getHopCount());
 			// Send event to listeners
-			super.sendEventToListeners("GotPing", null, host);
-			super.sendEventToListeners("SentPong", null, host);
+			super.sendEventToListeners("GotPing", null, host, -1.0, null);
+			super.sendEventToListeners("SentPong", null, host, -1.0, null); //TODO: this should be placed elsewhere, in the point where pong is actually sent.
 		}
 
 		// Received a pong reply
@@ -178,14 +180,19 @@ public class PingApplication extends Application {
 	}
 	private void receivePong(DTNHost host, Message msg){
 		//if(msg.getFrom().getName().startsWith("p") && msg.getTo().getName().startsWith("p"))
-		//System.out.println("receive pong from:"+msg.getFrom().getName()+" to: "+msg.getTo().getName() +" size: "+msg.getSize()+"\tid "+msg.getId());
+		/*System.out.println("receive pong from:"+msg.getFrom().getName()+" to: "+msg.getTo().getName() +" size: "+msg.getSize()+"\tid "+msg.getId());
+		if(msg.getRequest() != null)
+			System.out.println("REQ receive pong from:"+msg.getRequest().getFrom().getName()+" to: "+msg.getRequest().getTo().getName() +" size: "+msg.getRequest().getSize()+"\tid "+msg.getRequest().getId());
+		else
+			System.out.println("REQ null");
+		System.out.println("");*/
 		//System.out.println(""+((int) msg.getProperty("webpageNumber"))+","+msg.getSize());
 		if(host.useCache()) {
 			host.addToCache((int) msg.getProperty("webpageNumber"), msg.getSize());
 		}
 		host.setWaitForReply(false);
 		// Send event to listeners
-		super.sendEventToListeners("GotPong", null, host);
+		super.sendEventToListeners("GotPong", null, host, SimClock.getTime() - msg.getRequest().getCreationTime(), msg.getFrom().getTypeOfHost());
 	}
 
 	/**
@@ -211,7 +218,7 @@ public class PingApplication extends Application {
 
 	private void createNewRequest(){
 		requestedWebPageNumber = webPages.getRandomWebPageNumber();
-
+        //TODO: count all requests per host
 
 	}
 	/**
@@ -238,19 +245,33 @@ public class PingApplication extends Application {
 					m.addProperty("type", "pong");
 					m.setAppID(APP_ID);
 					m.addProperty("webpageNumber", requestedWebPageNumber);
-					receivePong(host, m);        //Use a message from,to itself
+					receivePong(host, m);        //Use a message from,to itselfx
+
+                    super.sendEventToListeners("SentPing", null, host, -1.0, null);
+                    host.getTypesOfDestionations().clear();
 				} else {
 					//Check on all available nodes
 					host.sendWebPageRequests(pingSize, curTime, requestedWebPageNumber, APP_ID);
+
+                    ArrayList<DTNHost.TypeOfHost> typeOfDestinations = host.getTypesOfDestionations();
+                    for(DTNHost.TypeOfHost dest : typeOfDestinations) {
+                        super.sendEventToListeners("SentPing", null, host, -1.0, dest);
+                    }
+                    host.getTypesOfDestionations().clear();
 				}
 			}else{
-
-				//Check on all available nodes
+                //Check on all available nodes
 				host.sendWebPageRequests(pingSize, curTime, requestedWebPageNumber, APP_ID);
+
+                ArrayList<DTNHost.TypeOfHost> typeOfDestinations = host.getTypesOfDestionations();
+                for(DTNHost.TypeOfHost dest : typeOfDestinations) {
+                    super.sendEventToListeners("SentPing", null, host, -1.0, dest);
+                }
+                host.getTypesOfDestionations().clear();
 			}
 
 			// Call listeners
-			super.sendEventToListeners("SentPing", null, host);
+			//super.sendEventToListeners("SentPing", null, host, -1.0, null);
 			this.interval = drawNextHomepageRequest();
 			this.lastPing = curTime;
 

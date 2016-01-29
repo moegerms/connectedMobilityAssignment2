@@ -31,5 +31,5 @@ public interface ApplicationListener {
 	 * @param host		The host this application instance is running on.
 	 */
 	public void gotEvent(String event, Object params, Application app,
-			DTNHost host);
+			DTNHost host, double responseTime, DTNHost.TypeOfHost typeOfResponseHost);
 }

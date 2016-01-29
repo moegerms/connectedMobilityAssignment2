@@ -12,10 +12,16 @@ public class Transmit_WiFi extends Transmit {
     }
 
     @Override
-    public void transmitNewPageRequest() {
+    public int transmitNewPageRequest() {
+        int returnValue = 0;
+
         for (DTNHost hotSpot : host.getHotSpotConnections()) {
             transmitMessageTo(hotSpot);
+            //System.out.println("Transmit: Send Message from "+host.getName()+" to: "+hotSpot.getName());
+            returnValue++;
         }
+
+        return returnValue;
     }
 
 

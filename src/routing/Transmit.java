@@ -20,7 +20,7 @@ public abstract class Transmit {
     }
 
 
-    public abstract void transmitNewPageRequest();
+    public abstract int transmitNewPageRequest();
 
     protected void transmitMessageTo(DTNHost transmitTo){
         //System.out.println("Transmit: Send Message from "+host.getName()+" to: "+transmitTo.getName());

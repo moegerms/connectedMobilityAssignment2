@@ -13,10 +13,15 @@ public class Transmit_Pedestrian extends Transmit {
     }
 
     @Override
-    public void transmitNewPageRequest() {
+    public int transmitNewPageRequest() {
+        int returnValue = 0;
+
         for (DTNHost pedestrian : host.getPedestrianConnections()) {
             transmitMessageTo(pedestrian);
+            returnValue++;
         }
+
+        return returnValue;
     }
 
 

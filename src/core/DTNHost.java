@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import com.sun.org.apache.xpath.internal.SourceTree;
 import input.WebPage;
@@ -79,6 +81,9 @@ public class DTNHost implements Comparable<DTNHost> {
 		transmit_cellular = null;
 		transmit_hotspot = null;
 		transmit_pedestrian = null;
+
+        //typesOfDestionations.clear();
+
 		updateTransmit();
 	}
 	public void updateTransmit(){
@@ -87,77 +92,149 @@ public class DTNHost implements Comparable<DTNHost> {
 			case 0:
 				if(transmit_cellular == null) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_cellular.transmitNewPageRequest();
+					int result = transmit_cellular.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for(int i=0;i < result;i++)
+                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                    }
 				}
 				if(transmit_hotspot == null) {
 					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_hotspot.transmitNewPageRequest();
+                    int result = transmit_hotspot.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                    }
 				}
 				break;
 			case 1:
 				//50% cellular network only, together with case 2
 				if(transmit_cellular == null) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_cellular.transmitNewPageRequest();
+                    int result = transmit_cellular.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                    }
 				}
 				break;
 			case 2:
 				// 50% wifi only users, together with case 1
 				if(transmit_hotspot == null) {
 					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_hotspot.transmitNewPageRequest();
+                    int result = transmit_hotspot.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                    }
 				}
 				break;
 			case 3:
 				// All cellular with WiFi offloading - Instant
 				if(transmit_hotspot == null) {
 					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_hotspot.transmitNewPageRequest();
+                    int result = transmit_hotspot.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                    }
 				}
 				//Wait a short period of time for wifi, then use cellular network or use cellular direct, if not on wifi
 				if(transmit_cellular == null && this.getHotSpotConnections().size() == 0) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_cellular.transmitNewPageRequest();
+                    int result = transmit_cellular.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                    }
 				}
+                break;
 			case 4:
 				// All cellular with WiFi offloading - 60 sec wait time
 				if(transmit_hotspot == null) {
 					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_hotspot.transmitNewPageRequest();
+                    int result = transmit_hotspot.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                    }
 				}
 				//Wait 60 sec for wifi, then use cellular network
 				if(transmit_cellular == null &&  ((SimClock.getTime() - curTime)>60)) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_cellular.transmitNewPageRequest();
+                    int result = transmit_cellular.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                    }
 				}
+                break;
 			case 5:
 				// All cellular with WiFi offloading - 300 sec wait time
 				if(transmit_hotspot == null) {
 					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_hotspot.transmitNewPageRequest();
+                    int result = transmit_hotspot.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                    }
 				}
 				//Wait 300 sec for wifi, then use cellular network
 				if(transmit_cellular == null &&  ((SimClock.getTime() - curTime)>300)) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_cellular.transmitNewPageRequest();
+                    int result = transmit_cellular.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                    }
 				}
+                break;
 			case 6:
 				// Cellular with WiFi offloading and peer-to-peer caching (wait 300sec)
 				if(transmit_hotspot == null) {
 					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_hotspot.transmitNewPageRequest();
+                    int result = transmit_hotspot.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                    }
 				}
 				if(transmit_pedestrian == null) {
 					transmit_pedestrian = new Transmit_Pedestrian(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_pedestrian.transmitNewPageRequest();
+                    int result = transmit_pedestrian.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.REGULAR_HOST);
+                    }
 				}
 				//Wait 300 sec for wifi, then use cellular network
 				if(transmit_cellular == null &&  ((SimClock.getTime() - curTime)>300)) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-					transmit_cellular.transmitNewPageRequest();
+                    int result = transmit_cellular.transmitNewPageRequest();
+
+                    if(result > 0) {
+                        for (int i = 0; i < result; i++)
+                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                    }
 				}
+                break;
+            default:
+                break;
 		}
 	}
+
 
 	public void setDemoCase(int demoCase) {
 		this.demo_case = demoCase;
@@ -179,6 +256,15 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 	private TypeOfHost typeOfHost;
 
+    public TypeOfHost getTypeOfHost() {
+        return this.typeOfHost;
+    }
+
+    private ArrayList<TypeOfHost> typesOfDestionations = new ArrayList<TypeOfHost>();
+
+    public ArrayList<TypeOfHost> getTypesOfDestionations() {
+        return this.typesOfDestionations;
+    }
 
 
 	static {
@@ -241,9 +327,9 @@ public class DTNHost implements Comparable<DTNHost> {
 				l.initialLocation(this, this.location);
 			}
 		}
-		if(groupId.equals("z"))
+		if(groupId.startsWith("z"))
 			typeOfHost = TypeOfHost.CELLULAR_BASE;
-		else if(groupId.equals("p") || groupId.equals("c"))
+		else if(groupId.startsWith("p"))
 			typeOfHost = TypeOfHost.REGULAR_HOST;
 		else
 			typeOfHost = TypeOfHost.WIFI_HOTSPOT;
@@ -326,17 +412,17 @@ public class DTNHost implements Comparable<DTNHost> {
 		DTNHost otherNode = con.getOtherNode(this);
 		//System.out.println("Up Conntection from "+this.getName()+" to: "+otherNode.getName());
 		if(this.getName().startsWith("p")){	//Only required for pedestrians
-			if(otherNode.getName().startsWith("p")){
+			if(otherNode.getTypeOfHost() == DTNHost.TypeOfHost.REGULAR_HOST){
 				//System.out.println("C "+this.getName() +" to pedestrian");
 				//connection between pedestrians can be asked for cache
 				addPedestrianConnection(otherNode, con);
 			}
-			if(otherNode.getName().startsWith("HotSpot")){
+			if(otherNode.getTypeOfHost() == TypeOfHost.WIFI_HOTSPOT){
 				//System.out.println("C "+this.getName() +" to HotSpot");
 				//connection to HotSpot
 				addHotSpotConnection(otherNode, con);
 			}
-			if(otherNode.getName().startsWith("z")){
+			if(otherNode.getTypeOfHost() == TypeOfHost.CELLULAR_BASE){
 				//System.out.println("C "+this.getName() +" to cellular");
 				//connection to Cellular Network
 				connectedCellular = otherNode;
@@ -349,17 +435,32 @@ public class DTNHost implements Comparable<DTNHost> {
 	private ArrayList<DTNHost> connectedToHotSpots = new ArrayList<>();
 	private DTNHost connectedCellular;
 
+
 	private void addPedestrianConnection(DTNHost otherHost, Connection con){
 		connectedToPedestrians.add(otherHost);
 		if(getWaitForReply() && transmit_pedestrian != null) transmit_pedestrian.newConnectionPedestrian(con);
 	}
+
 	private void removePedestrianConnection(DTNHost otherHost){
 		connectedToPedestrians.remove(otherHost);
 	}
+
+
+
+
 	private void addHotSpotConnection(DTNHost otherHost, Connection con){
 		connectedToHotSpots.add(otherHost);
-		if(getWaitForReply() && transmit_hotspot != null) transmit_hotspot.newConnectionHotSpot(con);
+
+		if(getWaitForReply() && transmit_hotspot != null) {
+			transmit_hotspot.newConnectionHotSpot(con);
+
+			for(Application app :router.getApplications(APP_ID)){
+                //System.out.println("Event Out of the Window");
+                app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.WIFI_HOTSPOT);
+			}
+		}
 	}
+
 	private void removeHotSpotConnection(DTNHost otherHost){
 		connectedToHotSpots.remove(otherHost);
 	}

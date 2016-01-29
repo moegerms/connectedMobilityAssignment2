@@ -14,8 +14,10 @@ public class Transmit_Cellular extends Transmit {
     }
 
     @Override
-    public void transmitNewPageRequest() {
+    public int transmitNewPageRequest() {
         transmitMessageTo(getCellularHost());
+
+        return 1;
     }
 
     @Override

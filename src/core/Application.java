@@ -117,9 +117,9 @@ public abstract class Application {
 	 * @param host		The host which where the app is running.
 	 */
 	public void sendEventToListeners(String event, Object params,
-			DTNHost host) {
+									 DTNHost host, double responseTime, DTNHost.TypeOfHost typeOfResponseHost) {
 		for (ApplicationListener al : this.aListeners) {
-			al.gotEvent(event, params, this, host);
+			al.gotEvent(event, params, this, host, responseTime, typeOfResponseHost);
 		}
 	}
 }
