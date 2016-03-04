@@ -1,31 +1,273 @@
 Ping stats for scenario default_scenario
-sim_time: 4000.1000
-pings sent: 1453
-pings received: 1449
-pongs sent: 1449
-pongs received: 1449
-ping delivery prob: 0.9972
-pong delivery prob: 1.0000
-ping/pong success prob: 0.9972
+--------------------------------
 
-Response Times Statistics
+simulation time: 4000.1000
+pings sent: 1858
+pings received: 1299
+pongs sent: 1299
+pongs received: 1299
+ping delivery probability: 0.6991
+pong delivery probability: 1.0000
+ping/pong success probability: 0.6991
 
-mean response time: 0.617322291234928
-median response time: 0.5999999999994543
-95%-tile response time: 1.1999999999989086
-min response time: 0.1999999999998181
-max response time: 2.09999999999809
+bytes sent: 1858000
+bytes received: 2301085203
 
-Offloading Statistics
 
-#responses Cellular: 1265
-#responses WiFi: 184
+Response Times Statistics (by the way, Response Time is actually the RTT)
+--------------------------------
+
+mean response time: 0.5926096997686419 secs
+median response time: 0.5000000000001137 secs
+95%-tile response time: 1.0999999999989996 secs
+min response time: 0.1999999999998181 secs
+max response time: 2.299999999997908 secs
+
+
+Offloading Statistics (Overall) - Requests
+--------------------------------
+
+#requests Cellular: 978
+#requests WiFi: 278
+#requests Pedestrian: 602
+#offloading request share WiFi: 14.96 %
+#offloading request ratio WiFi: 278 / 1858
+#offloading request share Pedestrian: 32.4 %
+#offloading request ratio Pedestrian: 602 / 1858
+#offloading request share Pedestrian to WiFi: 216.55 %
+#offloading request ratio Pedestrian to WiFi: 602 / 278
+
+
+Offloading Statistics (Overall) - Request Bytes
+--------------------------------
+
+#request bytes Cellular: 978000
+#request bytes WiFi: 278000
+#request bytes Pedestrian: 602000
+#offloading request bytes share WiFi: 14.96 %
+#offloading request bytes ratio WiFi: 278000 / 1858000
+#offloading request bytes share Pedestrian: 32.4 %
+#offloading request bytes ratio Pedestrian: 602000 / 1858000
+#offloading request bytes share Pedestrian to WiFi: 216.55 %
+#offloading request bytes ratio Pedestrian to WiFi: 602000 / 278000
+
+
+Offloading Statistics (Overall) - Responses
+--------------------------------
+
+#responses Cellular: 1029
+#responses WiFi: 270
 #responses Pedestrian: 0
-#offloading share WiFi: 12.7 %
-#offloading ratio WiFi: 184 / 1449
-#offloading share Pedestrian: 0 %
-#offloading ratio Pedestrian: 0 / 1449
-#offloading share Pedestrian: 0 %
-#offloading ratio Pedestrian: 0 / 184
-#requests WiFi: 185
-#requests Pedestrian: 0
+#offloading response share WiFi: 20.79 %
+#offloading response ratio WiFi: 270 / 1299
+#offloading response share Pedestrian: 0 %
+#offloading response ratio Pedestrian: 0 / 1299
+#offloading response share Pedestrian to WiFi: 0 %
+#offloading response ratio Pedestrian to WiFi: 0 / 270
+
+
+Offloading Statistics (Overall) - Response Bytes
+--------------------------------
+
+#response bytes Cellular: 1827606770
+#response bytes WiFi: 473478433
+#response bytes Pedestrian: 0
+
+#offloading response bytes share WiFi: 20.58 %
+#offloading response bytes ratio WiFi: 473478433 / 2301085203
+#offloading response bytes share Pedestrian: 0 %
+#offloading response bytes ratio Pedestrian: 0 / 2301085203
+#offloading response bytes share Pedestrian to WiFi: 0 %
+#offloading response bytes ratio Pedestrian to WiFi: 0 / 473478433
+
+
+Offloading Statistics (Per Node) - Requests
+--------------------------------
+
+
+mean requests Cellular: 4.89  requests per node
+mean request share Cellular: 55.6 %  (mean of individual shares)
+median requests Cellular: 5  requests per node
+median request share Cellular: 55.56 %
+95%-tile requests Cellular: 7
+95%-tile request share Cellular: 85.71 %
+min requests Cellular: 1
+min request share Cellular: 12.5 %
+max requests Cellular: 8
+max request share Cellular: 100 %
+
+
+mean offloading requests WiFi: 1.39
+mean offloading request share WiFi: 15.08 %  (mean of individual shares)
+median offloading requests WiFi: 1
+median offloading request share WiFi: 12.5 %
+95%-tile offloading requests WiFi: 4
+95%-tile offloading request share WiFi: 37.5 %
+min offloading requests WiFi: 0
+min offloading request share WiFi: 0 %
+max offloading requests WiFi: 6
+max offloading request share WiFi: 62.5 %
+
+
+mean offloading requests Pedestrian: 3.01
+mean offloading request share Pedestrian: 29.31 %
+median offloading requests Pedestrian: 3
+median offloading request share Pedestrian: 30 %
+95%-tile offloading requests Pedestrian: 7
+95%-tile offloading request share Pedestrian: 55.56 %
+min offloading requests Pedestrian: 0
+min offloading request share Pedestrian: 0 %
+max offloading requests Pedestrian: 12
+max offloading request share Pedestrian: 64.71 %
+
+
+mean requests Aggregate: 9.29   aggregate = cell + wifi + pedestrian      requests per node
+median requests Aggregate: 9
+95%-tile requests Aggregate: 14
+min requests Aggregate: 5
+max requests Aggregate: 19
+
+
+
+Offloading Statistics (Per Node) - Request Bytes
+--------------------------------
+
+
+mean request bytes Cellular: 4890.0
+mean request bytes share Cellular: 55.6 %
+median request bytes Cellular: 5000
+median request bytes share Cellular: 55.56 %
+95%-tile request bytes Cellular: 7000
+95%-tile request bytes share Cellular: 85.71 %
+min request bytes Cellular: 1000
+min request bytes share Cellular: 12.5 %
+max request bytes Cellular: 8000
+max request bytes share Cellular: 100 %
+
+
+mean offloading request bytes WiFi: 1390.0
+mean offloading request bytes share WiFi: 15.08 %
+median offloading request bytes WiFi: 1000
+median offloading request bytes share WiFi: 12.5 %
+95%-tile offloading request bytes WiFi: 4000
+95%-tile offloading request bytes share WiFi: 37.5 %
+min offloading request bytes WiFi: 0
+min offloading request bytes share WiFi: 0 %
+max offloading request bytes WiFi: 6000
+max offloading request bytes share WiFi: 62.5 %
+
+
+mean offloading request bytes Pedestrian: 3010.0
+mean offloading request bytes share Pedestrian: 29.31 %
+median offloading request bytes Pedestrian: 3000
+median offloading request bytes share Pedestrian: 30 %
+95%-tile offloading request bytes Pedestrian: 7000
+95%-tile offloading request bytes share Pedestrian: 55.56 %
+min offloading request bytes Pedestrian: 0
+min offloading request bytes share Pedestrian: 0 %
+max offloading request bytes Pedestrian: 12000
+max offloading request bytes share Pedestrian: 64.71 %
+
+
+mean request bytes Aggregate: 9290.0
+median request bytes Aggregate: 9000
+95%-tile request bytes Aggregate: 14000
+min request bytes Aggregate: 5000
+max request bytes Aggregate: 19000
+
+
+
+Offloading Statistics (Per Node) - Responses
+--------------------------------
+
+
+mean responses Cellular: 5.145
+mean response share Cellular: 79.81 %
+median responses Cellular: 5
+median response share Cellular: 83.33 %
+95%-tile responses Cellular: 7
+95%-tile response share Cellular: 100 %
+min responses Cellular: 2
+min response share Cellular: 28.57 %
+max responses Cellular: 9
+max response share Cellular: 100 %
+
+
+mean offloading responses WiFi: 1.35
+mean offloading response share WiFi: 20.19 %
+median offloading responses WiFi: 1
+median offloading response share WiFi: 16.67 %
+95%-tile offloading responses WiFi: 4
+95%-tile offloading response share WiFi: 50 %
+min offloading responses WiFi: 0
+min offloading response share WiFi: 0 %
+max offloading responses WiFi: 6
+max offloading response share WiFi: 71.43 %
+
+
+mean offloading responses Pedestrian: 0.0
+mean offloading response share Pedestrian: 0 %
+median offloading responses Pedestrian: 0
+median offloading response share Pedestrian: 0 %
+95%-tile offloading responses Pedestrian: 0
+95%-tile offloading response share Pedestrian: 0 %
+min offloading responses Pedestrian: 0
+min offloading response share Pedestrian: 0 %
+max offloading responses Pedestrian: 0
+max offloading response share Pedestrian: 0 %
+
+
+mean responses Aggregate: 6.495
+median responses Aggregate: 7
+95%-tile responses Aggregate: 9
+min responses Aggregate: 3
+max responses Aggregate: 10
+
+
+
+Offloading Statistics (Per Node) - Response Bytes
+--------------------------------
+
+
+mean response bytes Cellular: 9138033.85
+mean response bytes share Cellular: 79.99 %
+median response bytes Cellular: 9146890
+median response bytes share Cellular: 83.21 %
+95%-tile response bytes Cellular: 13860482
+95%-tile response bytes share Cellular: 100 %
+min response bytes Cellular: 2251484
+min response bytes share Cellular: 17.31 %
+max response bytes Cellular: 17800446
+max response bytes share Cellular: 100 %
+
+
+mean offloading response bytes WiFi: 2367392.165
+mean offloading response bytes share WiFi: 20.01 %
+median offloading response bytes WiFi: 1879117
+median offloading response bytes share WiFi: 16.8 %
+95%-tile offloading response bytes WiFi: 6884067
+95%-tile offloading response bytes share WiFi: 54.53 %
+min offloading response bytes WiFi: 0
+min offloading response bytes share WiFi: 0 %
+max offloading response bytes WiFi: 11226640
+max offloading response bytes share WiFi: 82.69 %
+
+
+mean offloading response bytes Pedestrian: 0.0
+mean offloading response bytes share Pedestrian: 0 %
+median offloading response bytes Pedestrian: 0
+median offloading response bytes share Pedestrian: 0 %
+95%-tile offloading response bytes Pedestrian: 0
+95%-tile offloading response bytes share Pedestrian: 0 %
+min offloading response bytes Pedestrian: 0
+min offloading response bytes share Pedestrian: 0 %
+max offloading response bytes Pedestrian: 0
+max offloading response bytes share Pedestrian: 0 %
+
+
+mean response bytes Aggregate: 1.1505426015E7
+median response bytes Aggregate: 11604136
+95%-tile response bytes Aggregate: 16201886
+min response bytes Aggregate: 5109450
+max response bytes Aggregate: 19349591
+

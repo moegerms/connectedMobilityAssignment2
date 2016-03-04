@@ -167,8 +167,8 @@ public class PingApplication extends Application {
 
 			//System.out.println("send pong from:"+m.getFrom().getName()+" \tto:  "+m.getTo().getName() +" \tsize: "+m.getSize()+ " \tttl "+m.getTtl()+" \tid "+m.getId()+" \thop count "+m.getHopCount());
 			// Send event to listeners
-			super.sendEventToListeners("GotPing", null, host, -1.0, null);
-			super.sendEventToListeners("SentPong", null, host, -1.0, null); //TODO: this should be placed elsewhere, in the point where pong is actually sent.
+			super.sendEventToListeners("GotPing", null, host, -1.0, null, m.getSize());
+			super.sendEventToListeners("SentPong", null, host, -1.0, null, m.getSize()); //TODO: this should be placed elsewhere, in the point where pong is actually sent.
 		}
 
 		// Received a pong reply
@@ -192,7 +192,8 @@ public class PingApplication extends Application {
 		}
 		host.setWaitForReply(false);
 		// Send event to listeners
-		super.sendEventToListeners("GotPong", null, host, SimClock.getTime() - msg.getRequest().getCreationTime(), msg.getFrom().getTypeOfHost());
+		super.sendEventToListeners("GotPong", null, host, SimClock.getTime() - msg.getRequest().getCreationTime(), msg.getFrom().getTypeOfHost(), msg.getSize());
+		//System.out.println("Page size:" + msg.getSize());
 	}
 
 	/**
@@ -247,7 +248,7 @@ public class PingApplication extends Application {
 					m.addProperty("webpageNumber", requestedWebPageNumber);
 					receivePong(host, m);        //Use a message from,to itselfx
 
-                    super.sendEventToListeners("SentPing", null, host, -1.0, null);
+                    super.sendEventToListeners("SentPing", null, host, -1.0, null, 0);	//TODO: I put 0 here because we are not actually sending a request. We retrieve from cache.
                     host.getTypesOfDestionations().clear();
 				} else {
 					//Check on all available nodes
@@ -255,7 +256,7 @@ public class PingApplication extends Application {
 
                     ArrayList<DTNHost.TypeOfHost> typeOfDestinations = host.getTypesOfDestionations();
                     for(DTNHost.TypeOfHost dest : typeOfDestinations) {
-                        super.sendEventToListeners("SentPing", null, host, -1.0, dest);
+                        super.sendEventToListeners("SentPing", null, host, -1.0, dest, 1000);
                     }
                     host.getTypesOfDestionations().clear();
 				}
@@ -265,7 +266,7 @@ public class PingApplication extends Application {
 
                 ArrayList<DTNHost.TypeOfHost> typeOfDestinations = host.getTypesOfDestionations();
                 for(DTNHost.TypeOfHost dest : typeOfDestinations) {
-                    super.sendEventToListeners("SentPing", null, host, -1.0, dest);
+                    super.sendEventToListeners("SentPing", null, host, -1.0, dest, 1000);
                 }
                 host.getTypesOfDestionations().clear();
 			}

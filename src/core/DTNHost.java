@@ -456,7 +456,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
 			for(Application app :router.getApplications(APP_ID)){
                 //System.out.println("Event Out of the Window");
-                app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.WIFI_HOTSPOT);
+                app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.WIFI_HOTSPOT, 1000);
 			}
 		}
 	}
