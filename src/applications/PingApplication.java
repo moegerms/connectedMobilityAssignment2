@@ -187,10 +187,23 @@ public class PingApplication extends Application {
 			System.out.println("REQ null");
 		System.out.println("");*/
 		//System.out.println(""+((int) msg.getProperty("webpageNumber"))+","+msg.getSize());
+
+        int webpageNumber = (int) msg.getProperty("webpageNumber");
 		if(host.useCache()) {
-			host.addToCache((int) msg.getProperty("webpageNumber"), msg.getSize());
+			host.addToCache(webpageNumber, msg.getSize());
 		}
-		host.setWaitForReply(false);
+
+		//host.setWaitForReply(false);
+        for(int i=0 ; i < host.getRequestBuffer().size() ; i++) {
+            DTNHost.RequestBufferEntry entry = host.getRequestBuffer().get(i);
+
+            if(entry.getRequestedWebPageNumber() == webpageNumber) {
+                host.getRequestBuffer().remove(i);
+                break;
+            }
+        }
+
+
 		// Send event to listeners
 		super.sendEventToListeners("GotPong", null, host, SimClock.getTime() - msg.getRequest().getCreationTime(), msg.getFrom().getTypeOfHost(), msg.getSize());
 		//System.out.println("Page size:" + msg.getSize());

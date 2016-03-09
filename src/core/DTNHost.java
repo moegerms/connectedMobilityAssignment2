@@ -25,8 +25,8 @@ import static core.Constants.DEBUG;
  */
 public class DTNHost implements Comparable<DTNHost> {
 
-
-
+    public static int requestTimeOut = 60; //seconds
+    public static int temp = 0;
 
 	private static int nextAddress = 0;
 	private int address;
@@ -50,13 +50,19 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 
 
-	private boolean waitForReply = false;
-	public void setWaitForReply(boolean waitForReply){
-		this.waitForReply = waitForReply;
-	}
-	public boolean getWaitForReply(){
-		return waitForReply;
-	}
+	//private boolean waitForReply = false;
+	//public void setWaitForReply(boolean waitForReply){
+	//	this.waitForReply = waitForReply;
+	//}
+
+
+	//public boolean getWaitForReply(){
+	//	return waitForReply;
+	//}
+
+    public boolean existPendingRequests() {
+        return (requestBuffer.size() > 0 ? true : false);
+    }
 
 
 	private Transmit_Cellular transmit_cellular;
@@ -71,26 +77,31 @@ public class DTNHost implements Comparable<DTNHost> {
 	private boolean caching = false;
 	private int cacheEntries = 0;
 	private LinkedList cache = new LinkedList();
+    private ArrayList<RequestBufferEntry> requestBuffer = new ArrayList<RequestBufferEntry>();
 
 	public void sendWebPageRequests(int pingSize, double curTime, int requestedWebPageNumber, String APP_ID) {
 		this.pingSize = pingSize;
 		this.curTime = curTime;
 		this.requestedWebPageNumber = requestedWebPageNumber;
 		this.APP_ID = APP_ID;
-		setWaitForReply(true);
+		//setWaitForReply(true);
 		transmit_cellular = null;
 		transmit_hotspot = null;
 		transmit_pedestrian = null;
 
         //typesOfDestionations.clear();
 
-		updateTransmit();
+		updateTransmit(true);
 	}
-	public void updateTransmit(){
-		if(!getWaitForReply()) return;		//Not linked to a message, just an open need for a website
+	public void updateTransmit(boolean newRequest){
+		//if(!getWaitForReply()) return;		//Not linked to a message, just an open need for a website
+
+        int result;
+
 		switch(demo_case){
 			case 0:
-				if(transmit_cellular == null) {
+                /* Empty dull case. */
+				/*if(transmit_cellular == null) {
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
 					int result = transmit_cellular.transmitNewPageRequest();
 
@@ -107,128 +118,383 @@ public class DTNHost implements Comparable<DTNHost> {
                         for (int i = 0; i < result; i++)
                             typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
                     }
-				}
+				}*/
 				break;
 			case 1:
 				//50% cellular network only, together with case 2
-				if(transmit_cellular == null) {
+				//if(transmit_cellular == null) {
+                if(newRequest){
 					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_cellular.transmitNewPageRequest();
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
+
+                    result = transmit_cellular.transmitNewPageRequest();
 
                     if(result > 0) {
+                        entry.stateIndicator = 1;
+
                         for (int i = 0; i < result; i++)
                             typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
                     }
+
+                    requestBuffer.add(entry);
 				}
+                else {
+                    //Parse all the requests that havent been sent yet, or a response for them has not been received yet.
+                    for(RequestBufferEntry entry : requestBuffer) {
+                        //Act like the "newRequest" case.
+                        if(entry.stateIndicator == 0 || (entry.stateIndicator == 1 && ((SimClock.getTime() - entry.curTime) > requestTimeOut) )) {
+                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            entry.stateIndicator = 0;
+                            entry.curTime = SimClock.getTime();
+
+                            result = transmit_cellular.transmitNewPageRequest();
+
+                            if(result > 0) {
+                                entry.stateIndicator = 1;
+
+                                for (int i = 0; i < result; i++)
+                                    typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);  //TODO: Should we count the resent requests?
+                            }
+                        }
+                    }
+                }
 				break;
 			case 2:
 				// 50% wifi only users, together with case 1
-				if(transmit_hotspot == null) {
+				//if(transmit_hotspot == null) {
+                if(newRequest){
 					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_hotspot.transmitNewPageRequest();
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
+
+                    result = transmit_hotspot.transmitNewPageRequest();
 
                     if(result > 0) {
+                        entry.stateIndicator = 2;
+
                         for (int i = 0; i < result; i++)
                             typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
                     }
+
+                    requestBuffer.add(entry);
 				}
+                else {
+                    //Parse all the requests that havent been sent yet, or a response for them has not been received yet.
+                    for(RequestBufferEntry entry : requestBuffer) {
+                        //Act like the "newRequest" case.
+                        if(entry.stateIndicator == 0 || (entry.stateIndicator == 2 && ((SimClock.getTime() - entry.curTime) > requestTimeOut) )) {
+                            transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            entry.stateIndicator = 0;
+                            entry.curTime = SimClock.getTime();
+
+                            result = transmit_hotspot.transmitNewPageRequest();
+
+                            if(result > 0) {
+                                entry.stateIndicator = 2;
+
+                                for (int i = 0; i < result; i++)
+                                    typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);  //TODO: Should we count the resent requests?
+                            }
+                        }
+                    }
+                }
 				break;
 			case 3:
 				// All cellular with WiFi offloading - Instant
-				if(transmit_hotspot == null) {
-					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_hotspot.transmitNewPageRequest();
+				//if(transmit_hotspot == null) {
+                if(newRequest) {
+                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
 
-                    if(result > 0) {
+                    result = transmit_hotspot.transmitNewPageRequest();
+
+                    if (result > 0) {
+                        entry.stateIndicator = 2;
+
                         for (int i = 0; i < result; i++)
                             typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
                     }
-				}
-				//Wait a short period of time for wifi, then use cellular network or use cellular direct, if not on wifi
-				if(transmit_cellular == null && this.getHotSpotConnections().size() == 0) {
-					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_cellular.transmitNewPageRequest();
 
-                    if(result > 0) {
-                        for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+
+                    //Use cellular network if not on wifi
+                    if (/*transmit_cellular == null &&*/ result == 0) { //meaning, if the request was not sent to any hotspot.
+                        transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
+                        result = transmit_cellular.transmitNewPageRequest();
+
+                        if (result > 0) {
+                            entry.stateIndicator = 1;
+
+                            for (int i = 0; i < result; i++)
+                                typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                        }
                     }
-				}
+
+                    requestBuffer.add(entry);
+                }
+                else {
+                    //Parse all the requests that havent been sent yet, or a response for them has not been received yet.
+                    for(RequestBufferEntry entry : requestBuffer) {
+                        //Act like the "newRequest" case.
+                        if(entry.stateIndicator == 0 || ((entry.stateIndicator == 1 || entry.stateIndicator == 2) && ((SimClock.getTime() - entry.curTime) > requestTimeOut) )) {
+                            transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            entry.stateIndicator = 0;
+                            entry.curTime = SimClock.getTime();
+
+                            result = transmit_hotspot.transmitNewPageRequest();
+
+                            if (result > 0) {
+                                entry.stateIndicator = 2;
+
+                                for (int i = 0; i < result; i++)
+                                    typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT); //TODO: Should we count the resent requests?
+                            }
+
+
+                            //Use cellular network if not on wifi
+                            if (/*transmit_cellular == null &&*/ result == 0) { //meaning, if the request was not sent to any hotspot.
+                                transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                entry.curTime = SimClock.getTime();
+
+                                result = transmit_cellular.transmitNewPageRequest();
+
+                                if (result > 0) {
+                                    entry.stateIndicator = 1;
+
+                                    for (int i = 0; i < result; i++)
+                                        typesOfDestionations.add(TypeOfHost.CELLULAR_BASE); //TODO: Should we count the resent requests?
+                                }
+                            }
+                        }
+                    }
+                }
                 break;
 			case 4:
 				// All cellular with WiFi offloading - 60 sec wait time
-				if(transmit_hotspot == null) {
-					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_hotspot.transmitNewPageRequest();
+				//if(transmit_hotspot == null) {
+                if(newRequest) {
+                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
 
-                    if(result > 0) {
+                    result = transmit_hotspot.transmitNewPageRequest();
+
+                    if (result > 0) {
+                        entry.stateIndicator = 2;
+
                         for (int i = 0; i < result; i++)
                             typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
                     }
-				}
-				//Wait 60 sec for wifi, then use cellular network
-				if(transmit_cellular == null &&  ((SimClock.getTime() - curTime)>60)) {
-					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_cellular.transmitNewPageRequest();
+                    //}
 
-                    if(result > 0) {
-                        for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                    requestBuffer.add(entry);
+
+                    //TODO: The below should not apply on new requests.
+                    //Wait 60 sec for wifi, then use cellular network
+                    //if (/*transmit_cellular == null &&*/  ((SimClock.getTime() - curTime) > 60)) {
+                        /*transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
+                        result = transmit_cellular.transmitNewPageRequest();
+
+                        if (result > 0) {
+                            for (int i = 0; i < result; i++)
+                                typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                        }
+                    }*/
+                }
+                else {
+                    //Parse all the requests that havent been sent yet, or a response for them has not been received yet.
+                    for(RequestBufferEntry entry : requestBuffer) {
+                        //Several cases, mainly for the cellular interface.
+                        if((SimClock.getTime() - entry.curTime) > requestTimeOut) { //requestTimeout and offloading time limit, have the same value
+                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            entry.stateIndicator = 0;
+                            entry.curTime = SimClock.getTime();
+
+                            result = transmit_cellular.transmitNewPageRequest();
+
+                            if (result > 0) {
+                                entry.stateIndicator = 1;
+
+                                for (int i = 0; i < result; i++) {
+                                    typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);  //TODO: Should we count the resent requests?
+                                    System.out.println(++temp);
+                                }
+                            }
+
+                            if (result == 0) { //meaning, if the request was not sent to Cell.
+                                //Try the procedure from the beginning.
+                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                entry.curTime = SimClock.getTime();
+
+                                result = transmit_hotspot.transmitNewPageRequest();
+
+                                if (result > 0) {
+                                    entry.stateIndicator = 2;
+
+                                    for (int i = 0; i < result; i++)
+                                        typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT); //TODO: Should we count the resent requests?
+                                }
+                            }
+
+                        }
                     }
-				}
+                }
                 break;
 			case 5:
 				// All cellular with WiFi offloading - 300 sec wait time
-				if(transmit_hotspot == null) {
-					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_hotspot.transmitNewPageRequest();
+				//if(transmit_hotspot == null) {
+                if(newRequest) {
+                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
 
-                    if(result > 0) {
+                    result = transmit_hotspot.transmitNewPageRequest();
+
+                    if (result > 0) {
+                        entry.stateIndicator = 2;
+
                         for (int i = 0; i < result; i++)
                             typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
                     }
-				}
-				//Wait 300 sec for wifi, then use cellular network
-				if(transmit_cellular == null &&  ((SimClock.getTime() - curTime)>300)) {
-					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_cellular.transmitNewPageRequest();
+                    //}
 
-                    if(result > 0) {
-                        for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                    requestBuffer.add(entry);
+
+                    //TODO: The below should not apply on new requests.
+                    //Wait 300 sec for wifi, then use cellular network
+                    //if (/*transmit_cellular == null &&*/  ((SimClock.getTime() - curTime) > 300)) {
+                        /*transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
+                        result = transmit_cellular.transmitNewPageRequest();
+
+                        if (result > 0) {
+                            for (int i = 0; i < result; i++)
+                                typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                        }
+                    }*/
+                }
+                else {
+                    //Parse all the requests that havent been sent yet, or a response for them has not been received yet.
+                    for(RequestBufferEntry entry : requestBuffer) {
+                        //Several cases, mainly for the cellular interface.
+                        if((entry.stateIndicator == 0 && ((SimClock.getTime() - entry.curTime) > 300)) || (entry.stateIndicator != 0 && ((SimClock.getTime() - entry.curTime) > requestTimeOut))) {
+                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            entry.stateIndicator = 0;
+                            entry.curTime = SimClock.getTime();
+
+                            result = transmit_cellular.transmitNewPageRequest();
+
+                            if (result > 0) {
+                                entry.stateIndicator = 1;
+
+                                for (int i = 0; i < result; i++)
+                                    typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);  //TODO: Should we count the resent requests?
+                            }
+
+                            if (result == 0) { //meaning, if the request was not sent to Cell.
+                                //Try the procedure from the beginning.
+                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                entry.curTime = SimClock.getTime();
+
+                                result = transmit_hotspot.transmitNewPageRequest();
+
+                                if (result > 0) {
+                                    entry.stateIndicator = 2;
+
+                                    for (int i = 0; i < result; i++)
+                                        typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT); //TODO: Should we count the resent requests?
+                                }
+                            }
+
+                        }
                     }
-				}
+                }
                 break;
 			case 6:
 				// Cellular with WiFi offloading and peer-to-peer caching (wait 300sec)
-				if(transmit_hotspot == null) {
-					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_hotspot.transmitNewPageRequest();
+				//if(transmit_hotspot == null) {
+                if(newRequest) {
+                    //First, try to find the page within the caches of nearby pedestrians.
+                    transmit_pedestrian = new Transmit_Pedestrian(this, pingSize, requestedWebPageNumber, APP_ID);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
 
-                    if(result > 0) {
-                        for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
-                    }
-				}
-				if(transmit_pedestrian == null) {
-					transmit_pedestrian = new Transmit_Pedestrian(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_pedestrian.transmitNewPageRequest();
+                    result = transmit_pedestrian.transmitNewPageRequest();
 
-                    if(result > 0) {
+                    if (result > 0) {
+                        entry.stateIndicator = 2;
+
                         for (int i = 0; i < result; i++)
                             typesOfDestionations.add(TypeOfHost.REGULAR_HOST);
                     }
-				}
-				//Wait 300 sec for wifi, then use cellular network
-				if(transmit_cellular == null &&  ((SimClock.getTime() - curTime)>300)) {
-					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-                    int result = transmit_cellular.transmitNewPageRequest();
 
-                    if(result > 0) {
+                    //At the same time, try to find Hotspots in range.
+                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
+
+                    result = transmit_hotspot.transmitNewPageRequest();
+
+                    if (result > 0) {
+                        entry.stateIndicator = 2;
+
                         for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
                     }
-				}
+
+                    requestBuffer.add(entry);
+
+                    //TODO: The below should not apply on new requests.
+                    //Wait 300 sec for wifi, then use cellular network
+                    //if (/*transmit_cellular == null && */ ((SimClock.getTime() - curTime) > 300)) {
+                        /*transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
+                        result = transmit_cellular.transmitNewPageRequest();
+
+                        if (result > 0) {
+                            for (int i = 0; i < result; i++)
+                                typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                        }
+                    }*/
+                }
+                else {
+                    //Parse all the requests that havent been sent yet, or a response for them has not been received yet.
+                    for(RequestBufferEntry entry : requestBuffer) {
+                        //Several cases, mainly for the cellular interface.
+                        if((entry.stateIndicator == 0 && ((SimClock.getTime() - entry.curTime) > 300)) || (entry.stateIndicator != 0 && ((SimClock.getTime() - entry.curTime) > requestTimeOut))) {
+                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            entry.stateIndicator = 0;
+                            entry.curTime = SimClock.getTime();
+
+                            result = transmit_cellular.transmitNewPageRequest();
+
+                            if (result > 0) {
+                                entry.stateIndicator = 1;
+
+                                for (int i = 0; i < result; i++)
+                                    typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);  //TODO: Should we count the resent requests?
+                            }
+
+                            if (result == 0) { //meaning, if the request was not sent to Cell.
+                                //Try the procedure from the beginning.
+                                transmit_pedestrian = new Transmit_Pedestrian(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                entry.curTime = SimClock.getTime();
+
+                                result = transmit_pedestrian.transmitNewPageRequest();
+
+                                if (result > 0) {
+                                    entry.stateIndicator = 2;
+
+                                    for (int i = 0; i < result; i++)
+                                        typesOfDestionations.add(TypeOfHost.REGULAR_HOST);  //TODO: Should we count the resent requests?
+                                }
+
+                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+
+                                result = transmit_hotspot.transmitNewPageRequest();
+
+                                if (result > 0) {
+                                    entry.stateIndicator = 2;
+
+                                    for (int i = 0; i < result; i++)
+                                        typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT); //TODO: Should we count the resent requests?
+                                }
+                            }
+
+                        }
+                    }
+                }
                 break;
             default:
                 break;
@@ -264,6 +530,37 @@ public class DTNHost implements Comparable<DTNHost> {
 
     public ArrayList<TypeOfHost> getTypesOfDestionations() {
         return this.typesOfDestionations;
+    }
+
+    public ArrayList<RequestBufferEntry> getRequestBuffer() {
+        return this.requestBuffer;
+    }
+
+
+    public class TypeOfDestinationEntry {
+        TypeOfHost typeOfDestionation;
+        boolean counted = false;
+
+    }
+
+    public class RequestBufferEntry {
+        int pingSize;
+        int requestedWebPageNumber;
+        int stateIndicator; //0 = not sent, 1 = sent by Cell but no response yet, 2 = sent by WiFi or Ped, but no response yet.
+        double curTime;
+        String APP_ID;
+
+        public RequestBufferEntry(int requestedWebPageNumber, int stateIndicator, double curTime, int pingSize, String APP_ID) {
+            this.pingSize = pingSize;
+            this.requestedWebPageNumber = requestedWebPageNumber;
+            this.stateIndicator = stateIndicator;
+            this.curTime = curTime;
+            this.APP_ID = APP_ID;
+        }
+
+        public int getRequestedWebPageNumber() {
+            return this.requestedWebPageNumber;
+        }
     }
 
 
@@ -438,7 +735,24 @@ public class DTNHost implements Comparable<DTNHost> {
 
 	private void addPedestrianConnection(DTNHost otherHost, Connection con){
 		connectedToPedestrians.add(otherHost);
-		if(getWaitForReply() && transmit_pedestrian != null) transmit_pedestrian.newConnectionPedestrian(con);
+		//if(getWaitForReply() && transmit_pedestrian != null) transmit_pedestrian.newConnectionPedestrian(con);
+
+        if(demo_case == 6 && existPendingRequests()) { //if there is a meaning into sending requests to other pedestrians.
+            for(RequestBufferEntry entry : requestBuffer) {
+                if(entry.stateIndicator != 1) {
+                    transmit_pedestrian = new Transmit_Pedestrian(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                    if(entry.stateIndicator == 0)
+                        entry.curTime = SimClock.getTime();
+
+                    transmit_pedestrian.newConnectionPedestrian(con);
+                    entry.stateIndicator = 2;
+
+                    for(Application app :router.getApplications(APP_ID)){
+                        app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.REGULAR_HOST, 1000);
+                    }
+                }
+            }
+        }
 	}
 
 	private void removePedestrianConnection(DTNHost otherHost){
@@ -451,14 +765,35 @@ public class DTNHost implements Comparable<DTNHost> {
 	private void addHotSpotConnection(DTNHost otherHost, Connection con){
 		connectedToHotSpots.add(otherHost);
 
-		if(getWaitForReply() && transmit_hotspot != null) {
+		/*if(getWaitForReply() && transmit_hotspot != null) {
 			transmit_hotspot.newConnectionHotSpot(con);
 
 			for(Application app :router.getApplications(APP_ID)){
-                //System.out.println("Event Out of the Window");
                 app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.WIFI_HOTSPOT, 1000);
 			}
-		}
+		}*/
+
+
+        if(demo_case >= 2 && existPendingRequests()) { //if there is a meaning into sending requests to new hotspots.
+            for(RequestBufferEntry entry : requestBuffer) {
+                if(entry.stateIndicator != 1) {
+                    transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                    if(entry.stateIndicator == 0)
+                        entry.curTime = SimClock.getTime();
+
+                    transmit_hotspot.newConnectionHotSpot(con);
+                    entry.stateIndicator = 2;
+
+                    for(Application app :router.getApplications(APP_ID)){
+                        app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.WIFI_HOTSPOT, 1000);
+                    }
+                }
+            }
+        }
+
+
+
+
 	}
 
 	private void removeHotSpotConnection(DTNHost otherHost){
@@ -711,7 +1046,7 @@ public class DTNHost implements Comparable<DTNHost> {
 				i.update();
 			}
 		}
-		updateTransmit();		//To enable timer
+		updateTransmit(false);		//To enable timer
 		this.router.update();
 	}
 
