@@ -10,12 +10,14 @@ public abstract class Transmit {
     protected DTNHost host;
     protected int pingSize;
     protected int webPageNumber;
+    protected double pageRequestCreationTime;
     protected String APP_ID;
 
-    public Transmit(DTNHost host, int pingSize, int webPageNumber, String APP_ID){
+    public Transmit(DTNHost host, int pingSize, int webPageNumber, String APP_ID, double pageRequestCreationTime){
         this.host = host;
         this.pingSize = pingSize;
         this.webPageNumber = webPageNumber;
+        this.pageRequestCreationTime = pageRequestCreationTime;
         this.APP_ID = APP_ID;
     }
 
@@ -29,6 +31,8 @@ public abstract class Transmit {
                 pingSize);
         m.addProperty("type", "ping");
         m.addProperty("webpageNumber", webPageNumber);
+        //m.addProperty("pageRequestCreationTime", pageRequestCreationTime);
+        m.setPageRequestCreationTime(pageRequestCreationTime);
         m.setAppID(APP_ID);
         host.createNewMessage(m);
     }

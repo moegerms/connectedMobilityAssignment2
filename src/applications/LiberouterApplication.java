@@ -54,8 +54,8 @@ public class LiberouterApplication extends Application {
 
 			System.out.println("send pong from:"+m.getFrom().getName()+" \tto:  "+m.getTo().getName() +" \tsize: "+m.getSize()+ " \tttl "+m.getTtl()+" \tid "+m.getId()+" \thop count "+m.getHopCount());
 			// Send event to listeners
-			super.sendEventToListeners("GotPing", null, host, -1.0, null, 0);
-			super.sendEventToListeners("SentPong", null, host, -1.0, null, 0);
+			super.sendEventToListeners("GotPing", null, host, -1.0, null, 0, -1.0);
+			super.sendEventToListeners("SentPong", null, host, -1.0, null, 0, -1.0);
 		}
 
 		// Received a pong reply
@@ -63,7 +63,7 @@ public class LiberouterApplication extends Application {
 			// Send event to listeners
 
 			System.out.println("receive pong from:"+msg.getFrom().getName()+" to: "+msg.getTo().getName() +" size: "+msg.getSize()+"\tid "+msg.getId());
-			super.sendEventToListeners("GotPong", null, host, -1.0, null, 0);
+			super.sendEventToListeners("GotPong", null, host, -1.0, null, 0, -1.0);
 		}
 
 		return msg;
@@ -105,7 +105,7 @@ public class LiberouterApplication extends Application {
 			host.createNewMessage(m);
 
 			// Call listeners
-			super.sendEventToListeners("SentPing", null, host, -1.0, null, 0);
+			super.sendEventToListeners("SentPing", null, host, -1.0, null, 0, -1.0);
 
 			this.lastPing = curTime;
 		}

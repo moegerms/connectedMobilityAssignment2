@@ -58,6 +58,7 @@ public class PingApplication extends Application {
 	private Random	rng;
 	private int cellularDelay = 300;
 	private int requestedWebPageNumber = 0;
+    private double pageRequestCreationTime;
 
 	/**
 	 * Creates a new ping application with the given settings.
@@ -167,8 +168,8 @@ public class PingApplication extends Application {
 
 			//System.out.println("send pong from:"+m.getFrom().getName()+" \tto:  "+m.getTo().getName() +" \tsize: "+m.getSize()+ " \tttl "+m.getTtl()+" \tid "+m.getId()+" \thop count "+m.getHopCount());
 			// Send event to listeners
-			super.sendEventToListeners("GotPing", null, host, -1.0, null, m.getSize());
-			super.sendEventToListeners("SentPong", null, host, -1.0, null, m.getSize()); //TODO: this should be placed elsewhere, in the point where pong is actually sent.
+			super.sendEventToListeners("GotPing", null, host, -1.0, null, m.getSize(), -1.0);
+			super.sendEventToListeners("SentPong", null, host, -1.0, null, m.getSize(), -1.0); //TODO: this should be placed elsewhere, in the point where pong is actually sent.
 		}
 
 		// Received a pong reply
@@ -189,6 +190,7 @@ public class PingApplication extends Application {
 		//System.out.println(""+((int) msg.getProperty("webpageNumber"))+","+msg.getSize());
 
         int webpageNumber = (int) msg.getProperty("webpageNumber");
+        double pageCreationTime = msg.getRequest().getPageRequestCreationTime();
 		if(host.useCache()) {
 			host.addToCache(webpageNumber, msg.getSize());
 		}
@@ -197,7 +199,8 @@ public class PingApplication extends Application {
         for(int i=0 ; i < host.getRequestBuffer().size() ; i++) {
             DTNHost.RequestBufferEntry entry = host.getRequestBuffer().get(i);
 
-            if(entry.getRequestedWebPageNumber() == webpageNumber) {
+            if(entry.getRequestedWebPageNumber() == webpageNumber && entry.getPageRequestCreationTime() == pageCreationTime) {
+                //System.out.println("CrT: "+pageCreationTime);
                 host.getRequestBuffer().remove(i);
                 break;
             }
@@ -205,7 +208,7 @@ public class PingApplication extends Application {
 
 
 		// Send event to listeners
-		super.sendEventToListeners("GotPong", null, host, SimClock.getTime() - msg.getRequest().getCreationTime(), msg.getFrom().getTypeOfHost(), msg.getSize());
+		super.sendEventToListeners("GotPong", null, host, SimClock.getTime() - msg.getRequest().getCreationTime(), msg.getFrom().getTypeOfHost(), msg.getSize(), SimClock.getTime() - msg.getRequest().getPageRequestCreationTime());
 		//System.out.println("Page size:" + msg.getSize());
 	}
 
@@ -233,7 +236,7 @@ public class PingApplication extends Application {
 	private void createNewRequest(){
 		requestedWebPageNumber = webPages.getRandomWebPageNumber();
         //TODO: count all requests per host
-
+        pageRequestCreationTime = SimClock.getTime();
 	}
 	/**
 	 * Sends a ping packet if this is an active application instance.
@@ -253,35 +256,42 @@ public class PingApplication extends Application {
 				int webPageSize = host.findWebPageInCache(requestedWebPageNumber);
 				if (webPageSize > 0) {
 					//Webpage still in cache
-					String id = "pong" + (int) (SimClock.getTime() * 10) + "-" +
+					/*String id = "pong" + (int) (SimClock.getTime() * 10) + "-" +
 							host.getAddress();
 					Message m = new Message(host, host, id, webPageSize);
 					m.addProperty("type", "pong");
 					m.setAppID(APP_ID);
 					m.addProperty("webpageNumber", requestedWebPageNumber);
-					receivePong(host, m);        //Use a message from,to itselfx
+					receivePong(host, m);    */    //Use a message from,to itselfx
 
-                    super.sendEventToListeners("SentPing", null, host, -1.0, null, 0);	//TODO: I put 0 here because we are not actually sending a request. We retrieve from cache.
-                    host.getTypesOfDestionations().clear();
+                    super.sendEventToListeners("InLocalCache", null, host, -1.0, null, 0, -1.0);	//TODO: I put 0 here because we are not actually sending a request. We retrieve from cache.
+                    //super.sendEventToListeners("SentPing", null, host, -1.0, null, 0);	//TODO: I put 0 here because we are not actually sending a request. We retrieve from cache.
+                    //host.getTypesOfDestionations().clear();
 				} else {
 					//Check on all available nodes
-					host.sendWebPageRequests(pingSize, curTime, requestedWebPageNumber, APP_ID);
+					host.sendWebPageRequests(pingSize, curTime, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
 
-                    ArrayList<DTNHost.TypeOfHost> typeOfDestinations = host.getTypesOfDestionations();
-                    for(DTNHost.TypeOfHost dest : typeOfDestinations) {
-                        super.sendEventToListeners("SentPing", null, host, -1.0, dest, 1000);
+                    ArrayList<DTNHost.TypeOfDestinationEntry> typeOfDestinations = host.getTypesOfDestinations();
+                    for(DTNHost.TypeOfDestinationEntry dest : typeOfDestinations) {
+                        if(!dest.isCounted()) {
+                            super.sendEventToListeners("SentPing", null, host, -1.0, dest.getTypeOfDestionation(), 1000, -1.0);
+                            dest.setCounted(true);
+                        }
                     }
-                    host.getTypesOfDestionations().clear();
+                    //host.getTypesOfDestionations().clear();
 				}
 			}else{
                 //Check on all available nodes
-				host.sendWebPageRequests(pingSize, curTime, requestedWebPageNumber, APP_ID);
+				host.sendWebPageRequests(pingSize, curTime, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
 
-                ArrayList<DTNHost.TypeOfHost> typeOfDestinations = host.getTypesOfDestionations();
-                for(DTNHost.TypeOfHost dest : typeOfDestinations) {
-                    super.sendEventToListeners("SentPing", null, host, -1.0, dest, 1000);
+                ArrayList<DTNHost.TypeOfDestinationEntry> typeOfDestinations = host.getTypesOfDestinations();
+                for(DTNHost.TypeOfDestinationEntry dest : typeOfDestinations) {
+                    if(!dest.isCounted()) {
+                        super.sendEventToListeners("SentPing", null, host, -1.0, dest.getTypeOfDestionation(), 1000, -1.0);
+                        dest.setCounted(true);
+                    }
                 }
-                host.getTypesOfDestionations().clear();
+                //host.getTypesOfDestionations().clear();
 			}
 
 			// Call listeners

@@ -1,2 +1,2 @@
-Mean: 57.1744
-Variance: 2533.0554
+Mean: 56.7920
+Variance: 2531.5762

@@ -49,6 +49,8 @@ public class Message implements Comparable<Message> {
 	/** Application ID of the application that created the message */
 	private String	appID;
 
+	private double pageRequestCreationTime;
+
 	static {
 		reset();
 		DTNSim.registerForReset(Message.class.getCanonicalName());
@@ -77,6 +79,8 @@ public class Message implements Comparable<Message> {
 		this.requestMsg = null;
 		this.properties = null;
 		this.appID = null;
+
+		//pageRequestCreationTime = 0.0d;
 
 		Message.nextUniqueId++;
 		addNodeOnPath(from);
@@ -262,6 +266,7 @@ public class Message implements Comparable<Message> {
 		this.requestMsg  = m.requestMsg;
 		this.initTtl = m.initTtl;
 		this.appID = m.appID;
+		this.pageRequestCreationTime = m.pageRequestCreationTime;
 
 		if (m.properties != null) {
 			Set<String> keys = m.properties.keySet();
@@ -358,6 +363,14 @@ public class Message implements Comparable<Message> {
 	 */
 	public void setAppID(String appID) {
 		this.appID = appID;
+	}
+
+	public void setPageRequestCreationTime(double pageRequestCreationTime) {
+		this.pageRequestCreationTime = pageRequestCreationTime;
+	}
+
+	public double getPageRequestCreationTime() {
+		return this.pageRequestCreationTime;
 	}
 
 }

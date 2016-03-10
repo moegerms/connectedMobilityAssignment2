@@ -11,8 +11,8 @@ Scenario.updateInterval = 0.1
 #Run 10 simulation runs for 12 hours each per scenario (1h warmup, which has to be excluded)
 
 #Scenario.endTime = 10000000
-#Scenario.endTime = 43200
-Scenario.endTime = 4000
+Scenario.endTime = 43200
+#Scenario.endTime = 4000
 
 ## Interface-specific settings:
 # type : which interface class the interface belongs to
@@ -123,9 +123,9 @@ Group6.nrofHosts = 100
 # Set Ping app for all nodes
 Group6.nrofApplications = 1
 Group6.application1 = pingApp
-Group6.demo_case = 4
+Group6.demo_case = 5
 Group6.caching = false
-Group6.cacheEntries = 100
+Group6.cacheEntries = 10
 
 # group7 (pedestrians) specific settings
 Group7.groupID = p
@@ -133,9 +133,9 @@ Group7.nrofHosts = 100
 # Set Ping app for all nodes
 Group7.nrofApplications = 1
 Group7.application1 = pingApp
-Group7.demo_case = 4
+Group7.demo_case = 5
 Group7.caching = false
-Group7.cacheEntries = 100
+Group7.cacheEntries = 10
 
 
 Scenario.nrofHostGroups = 40

@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import com.sun.org.apache.xpath.internal.SourceTree;
 import input.WebPage;
@@ -71,6 +69,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	private int pingSize;
 	private double curTime;
 	private int requestedWebPageNumber;
+    private double pageRequestCreationTime;
 	private String APP_ID;
 
 	private int demo_case = 1;
@@ -79,10 +78,11 @@ public class DTNHost implements Comparable<DTNHost> {
 	private LinkedList cache = new LinkedList();
     private ArrayList<RequestBufferEntry> requestBuffer = new ArrayList<RequestBufferEntry>();
 
-	public void sendWebPageRequests(int pingSize, double curTime, int requestedWebPageNumber, String APP_ID) {
+	public void sendWebPageRequests(int pingSize, double curTime, int requestedWebPageNumber, String APP_ID, double pageRequestCreationTime) {
 		this.pingSize = pingSize;
 		this.curTime = curTime;
 		this.requestedWebPageNumber = requestedWebPageNumber;
+        this.pageRequestCreationTime = pageRequestCreationTime;
 		this.APP_ID = APP_ID;
 		//setWaitForReply(true);
 		transmit_cellular = null;
@@ -124,8 +124,8 @@ public class DTNHost implements Comparable<DTNHost> {
 				//50% cellular network only, together with case 2
 				//if(transmit_cellular == null) {
                 if(newRequest){
-					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
-                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
+					transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID, pageRequestCreationTime);
 
                     result = transmit_cellular.transmitNewPageRequest();
 
@@ -133,7 +133,7 @@ public class DTNHost implements Comparable<DTNHost> {
                         entry.stateIndicator = 1;
 
                         for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                            typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.CELLULAR_BASE));
                     }
 
                     requestBuffer.add(entry);
@@ -143,7 +143,7 @@ public class DTNHost implements Comparable<DTNHost> {
                     for(RequestBufferEntry entry : requestBuffer) {
                         //Act like the "newRequest" case.
                         if(entry.stateIndicator == 0 || (entry.stateIndicator == 1 && ((SimClock.getTime() - entry.curTime) > requestTimeOut) )) {
-                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                             entry.stateIndicator = 0;
                             entry.curTime = SimClock.getTime();
 
@@ -153,7 +153,7 @@ public class DTNHost implements Comparable<DTNHost> {
                                 entry.stateIndicator = 1;
 
                                 for (int i = 0; i < result; i++)
-                                    typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);  //TODO: Should we count the resent requests?
+                                    typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.CELLULAR_BASE));  //TODO: Should we count the resent requests?
                             }
                         }
                     }
@@ -163,8 +163,8 @@ public class DTNHost implements Comparable<DTNHost> {
 				// 50% wifi only users, together with case 1
 				//if(transmit_hotspot == null) {
                 if(newRequest){
-					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
+					transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID, pageRequestCreationTime);
 
                     result = transmit_hotspot.transmitNewPageRequest();
 
@@ -172,7 +172,7 @@ public class DTNHost implements Comparable<DTNHost> {
                         entry.stateIndicator = 2;
 
                         for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                            typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT));
                     }
 
                     requestBuffer.add(entry);
@@ -182,7 +182,7 @@ public class DTNHost implements Comparable<DTNHost> {
                     for(RequestBufferEntry entry : requestBuffer) {
                         //Act like the "newRequest" case.
                         if(entry.stateIndicator == 0 || (entry.stateIndicator == 2 && ((SimClock.getTime() - entry.curTime) > requestTimeOut) )) {
-                            transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                             entry.stateIndicator = 0;
                             entry.curTime = SimClock.getTime();
 
@@ -192,7 +192,7 @@ public class DTNHost implements Comparable<DTNHost> {
                                 entry.stateIndicator = 2;
 
                                 for (int i = 0; i < result; i++)
-                                    typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);  //TODO: Should we count the resent requests?
+                                    typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT));  //TODO: Should we count the resent requests?
                             }
                         }
                     }
@@ -202,8 +202,8 @@ public class DTNHost implements Comparable<DTNHost> {
 				// All cellular with WiFi offloading - Instant
 				//if(transmit_hotspot == null) {
                 if(newRequest) {
-                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
+                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID, pageRequestCreationTime);
 
                     result = transmit_hotspot.transmitNewPageRequest();
 
@@ -211,20 +211,20 @@ public class DTNHost implements Comparable<DTNHost> {
                         entry.stateIndicator = 2;
 
                         for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                            typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT));
                     }
 
 
                     //Use cellular network if not on wifi
                     if (/*transmit_cellular == null &&*/ result == 0) { //meaning, if the request was not sent to any hotspot.
-                        transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID);
+                        transmit_cellular = new Transmit_Cellular(this, pingSize, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
                         result = transmit_cellular.transmitNewPageRequest();
 
                         if (result > 0) {
                             entry.stateIndicator = 1;
 
                             for (int i = 0; i < result; i++)
-                                typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);
+                                typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.CELLULAR_BASE));
                         }
                     }
 
@@ -235,7 +235,7 @@ public class DTNHost implements Comparable<DTNHost> {
                     for(RequestBufferEntry entry : requestBuffer) {
                         //Act like the "newRequest" case.
                         if(entry.stateIndicator == 0 || ((entry.stateIndicator == 1 || entry.stateIndicator == 2) && ((SimClock.getTime() - entry.curTime) > requestTimeOut) )) {
-                            transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                             entry.stateIndicator = 0;
                             entry.curTime = SimClock.getTime();
 
@@ -245,13 +245,13 @@ public class DTNHost implements Comparable<DTNHost> {
                                 entry.stateIndicator = 2;
 
                                 for (int i = 0; i < result; i++)
-                                    typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT); //TODO: Should we count the resent requests?
+                                    typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT)); //TODO: Should we count the resent requests?
                             }
 
 
                             //Use cellular network if not on wifi
                             if (/*transmit_cellular == null &&*/ result == 0) { //meaning, if the request was not sent to any hotspot.
-                                transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                                 entry.curTime = SimClock.getTime();
 
                                 result = transmit_cellular.transmitNewPageRequest();
@@ -260,7 +260,7 @@ public class DTNHost implements Comparable<DTNHost> {
                                     entry.stateIndicator = 1;
 
                                     for (int i = 0; i < result; i++)
-                                        typesOfDestionations.add(TypeOfHost.CELLULAR_BASE); //TODO: Should we count the resent requests?
+                                        typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.CELLULAR_BASE)); //TODO: Should we count the resent requests?
                                 }
                             }
                         }
@@ -271,8 +271,8 @@ public class DTNHost implements Comparable<DTNHost> {
 				// All cellular with WiFi offloading - 60 sec wait time
 				//if(transmit_hotspot == null) {
                 if(newRequest) {
-                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
+                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID, pageRequestCreationTime);
 
                     result = transmit_hotspot.transmitNewPageRequest();
 
@@ -280,7 +280,7 @@ public class DTNHost implements Comparable<DTNHost> {
                         entry.stateIndicator = 2;
 
                         for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                            typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT));
                     }
                     //}
 
@@ -303,7 +303,7 @@ public class DTNHost implements Comparable<DTNHost> {
                     for(RequestBufferEntry entry : requestBuffer) {
                         //Several cases, mainly for the cellular interface.
                         if((SimClock.getTime() - entry.curTime) > requestTimeOut) { //requestTimeout and offloading time limit, have the same value
-                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                             entry.stateIndicator = 0;
                             entry.curTime = SimClock.getTime();
 
@@ -313,14 +313,14 @@ public class DTNHost implements Comparable<DTNHost> {
                                 entry.stateIndicator = 1;
 
                                 for (int i = 0; i < result; i++) {
-                                    typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);  //TODO: Should we count the resent requests?
-                                    System.out.println(++temp);
+                                    typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.CELLULAR_BASE));  //TODO: Should we count the resent requests?
+                                    //System.out.println(++temp);
                                 }
                             }
 
                             if (result == 0) { //meaning, if the request was not sent to Cell.
                                 //Try the procedure from the beginning.
-                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                                 entry.curTime = SimClock.getTime();
 
                                 result = transmit_hotspot.transmitNewPageRequest();
@@ -329,7 +329,7 @@ public class DTNHost implements Comparable<DTNHost> {
                                     entry.stateIndicator = 2;
 
                                     for (int i = 0; i < result; i++)
-                                        typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT); //TODO: Should we count the resent requests?
+                                        typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT)); //TODO: Should we count the resent requests?
                                 }
                             }
 
@@ -341,8 +341,8 @@ public class DTNHost implements Comparable<DTNHost> {
 				// All cellular with WiFi offloading - 300 sec wait time
 				//if(transmit_hotspot == null) {
                 if(newRequest) {
-                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
-                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
+                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID, pageRequestCreationTime);
 
                     result = transmit_hotspot.transmitNewPageRequest();
 
@@ -350,7 +350,7 @@ public class DTNHost implements Comparable<DTNHost> {
                         entry.stateIndicator = 2;
 
                         for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                            typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT));
                     }
                     //}
 
@@ -373,7 +373,7 @@ public class DTNHost implements Comparable<DTNHost> {
                     for(RequestBufferEntry entry : requestBuffer) {
                         //Several cases, mainly for the cellular interface.
                         if((entry.stateIndicator == 0 && ((SimClock.getTime() - entry.curTime) > 300)) || (entry.stateIndicator != 0 && ((SimClock.getTime() - entry.curTime) > requestTimeOut))) {
-                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                             entry.stateIndicator = 0;
                             entry.curTime = SimClock.getTime();
 
@@ -382,13 +382,15 @@ public class DTNHost implements Comparable<DTNHost> {
                             if (result > 0) {
                                 entry.stateIndicator = 1;
 
-                                for (int i = 0; i < result; i++)
-                                    typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);  //TODO: Should we count the resent requests?
+                                for (int i = 0; i < result; i++) {
+                                    typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.CELLULAR_BASE));  //TODO: Should we count the resent requests?
+                                    //System.out.println(++temp);
+                                }
                             }
 
                             if (result == 0) { //meaning, if the request was not sent to Cell.
                                 //Try the procedure from the beginning.
-                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                                 entry.curTime = SimClock.getTime();
 
                                 result = transmit_hotspot.transmitNewPageRequest();
@@ -397,7 +399,7 @@ public class DTNHost implements Comparable<DTNHost> {
                                     entry.stateIndicator = 2;
 
                                     for (int i = 0; i < result; i++)
-                                        typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT); //TODO: Should we count the resent requests?
+                                        typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT)); //TODO: Should we count the resent requests?
                                 }
                             }
 
@@ -410,8 +412,8 @@ public class DTNHost implements Comparable<DTNHost> {
 				//if(transmit_hotspot == null) {
                 if(newRequest) {
                     //First, try to find the page within the caches of nearby pedestrians.
-                    transmit_pedestrian = new Transmit_Pedestrian(this, pingSize, requestedWebPageNumber, APP_ID);
-                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID);
+                    transmit_pedestrian = new Transmit_Pedestrian(this, pingSize, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
+                    RequestBufferEntry entry = new RequestBufferEntry(requestedWebPageNumber, 0, curTime, pingSize, APP_ID, pageRequestCreationTime);
 
                     result = transmit_pedestrian.transmitNewPageRequest();
 
@@ -419,11 +421,11 @@ public class DTNHost implements Comparable<DTNHost> {
                         entry.stateIndicator = 2;
 
                         for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.REGULAR_HOST);
+                            typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.REGULAR_HOST));
                     }
 
                     //At the same time, try to find Hotspots in range.
-                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID);
+                    transmit_hotspot = new Transmit_WiFi(this, pingSize, requestedWebPageNumber, APP_ID, pageRequestCreationTime);
 
                     result = transmit_hotspot.transmitNewPageRequest();
 
@@ -431,7 +433,7 @@ public class DTNHost implements Comparable<DTNHost> {
                         entry.stateIndicator = 2;
 
                         for (int i = 0; i < result; i++)
-                            typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT);
+                            typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT));
                     }
 
                     requestBuffer.add(entry);
@@ -453,7 +455,7 @@ public class DTNHost implements Comparable<DTNHost> {
                     for(RequestBufferEntry entry : requestBuffer) {
                         //Several cases, mainly for the cellular interface.
                         if((entry.stateIndicator == 0 && ((SimClock.getTime() - entry.curTime) > 300)) || (entry.stateIndicator != 0 && ((SimClock.getTime() - entry.curTime) > requestTimeOut))) {
-                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                            transmit_cellular = new Transmit_Cellular(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                             entry.stateIndicator = 0;
                             entry.curTime = SimClock.getTime();
 
@@ -463,12 +465,12 @@ public class DTNHost implements Comparable<DTNHost> {
                                 entry.stateIndicator = 1;
 
                                 for (int i = 0; i < result; i++)
-                                    typesOfDestionations.add(TypeOfHost.CELLULAR_BASE);  //TODO: Should we count the resent requests?
+                                    typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.CELLULAR_BASE));  //TODO: Should we count the resent requests?
                             }
 
                             if (result == 0) { //meaning, if the request was not sent to Cell.
                                 //Try the procedure from the beginning.
-                                transmit_pedestrian = new Transmit_Pedestrian(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                transmit_pedestrian = new Transmit_Pedestrian(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                                 entry.curTime = SimClock.getTime();
 
                                 result = transmit_pedestrian.transmitNewPageRequest();
@@ -477,10 +479,10 @@ public class DTNHost implements Comparable<DTNHost> {
                                     entry.stateIndicator = 2;
 
                                     for (int i = 0; i < result; i++)
-                                        typesOfDestionations.add(TypeOfHost.REGULAR_HOST);  //TODO: Should we count the resent requests?
+                                        typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.REGULAR_HOST));  //TODO: Should we count the resent requests?
                                 }
 
-                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                                transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
 
                                 result = transmit_hotspot.transmitNewPageRequest();
 
@@ -488,7 +490,7 @@ public class DTNHost implements Comparable<DTNHost> {
                                     entry.stateIndicator = 2;
 
                                     for (int i = 0; i < result; i++)
-                                        typesOfDestionations.add(TypeOfHost.WIFI_HOTSPOT); //TODO: Should we count the resent requests?
+                                        typesOfDestinations.add(new TypeOfDestinationEntry(TypeOfHost.WIFI_HOTSPOT)); //TODO: Should we count the resent requests?
                                 }
                             }
 
@@ -526,10 +528,10 @@ public class DTNHost implements Comparable<DTNHost> {
         return this.typeOfHost;
     }
 
-    private ArrayList<TypeOfHost> typesOfDestionations = new ArrayList<TypeOfHost>();
+    private ArrayList<TypeOfDestinationEntry> typesOfDestinations = new ArrayList<TypeOfDestinationEntry>();
 
-    public ArrayList<TypeOfHost> getTypesOfDestionations() {
-        return this.typesOfDestionations;
+    public ArrayList<TypeOfDestinationEntry> getTypesOfDestinations() {
+        return this.typesOfDestinations;
     }
 
     public ArrayList<RequestBufferEntry> getRequestBuffer() {
@@ -538,21 +540,39 @@ public class DTNHost implements Comparable<DTNHost> {
 
 
     public class TypeOfDestinationEntry {
-        TypeOfHost typeOfDestionation;
-        boolean counted = false;
+        TypeOfHost typeOfDestination;
+        boolean counted;
 
+        public TypeOfDestinationEntry(TypeOfHost typeOfDestionation) {
+            this.typeOfDestination = typeOfDestionation;
+            this.counted = false;
+        }
+
+        public TypeOfHost getTypeOfDestionation() {
+            return this.typeOfDestination;
+        }
+
+        public void setCounted(boolean counted) {
+            this.counted = counted;
+        }
+
+        public boolean isCounted() {
+            return this.counted;
+        }
     }
 
     public class RequestBufferEntry {
         int pingSize;
         int requestedWebPageNumber;
+        double pageRequestCreationTime;
         int stateIndicator; //0 = not sent, 1 = sent by Cell but no response yet, 2 = sent by WiFi or Ped, but no response yet.
         double curTime;
         String APP_ID;
 
-        public RequestBufferEntry(int requestedWebPageNumber, int stateIndicator, double curTime, int pingSize, String APP_ID) {
+        public RequestBufferEntry(int requestedWebPageNumber, int stateIndicator, double curTime, int pingSize, String APP_ID, double pageRequestCreationTime) {
             this.pingSize = pingSize;
             this.requestedWebPageNumber = requestedWebPageNumber;
+            this.pageRequestCreationTime = pageRequestCreationTime;
             this.stateIndicator = stateIndicator;
             this.curTime = curTime;
             this.APP_ID = APP_ID;
@@ -560,6 +580,10 @@ public class DTNHost implements Comparable<DTNHost> {
 
         public int getRequestedWebPageNumber() {
             return this.requestedWebPageNumber;
+        }
+
+        public double getPageRequestCreationTime() {
+            return this.pageRequestCreationTime;
         }
     }
 
@@ -740,7 +764,7 @@ public class DTNHost implements Comparable<DTNHost> {
         if(demo_case == 6 && existPendingRequests()) { //if there is a meaning into sending requests to other pedestrians.
             for(RequestBufferEntry entry : requestBuffer) {
                 if(entry.stateIndicator != 1) {
-                    transmit_pedestrian = new Transmit_Pedestrian(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                    transmit_pedestrian = new Transmit_Pedestrian(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                     if(entry.stateIndicator == 0)
                         entry.curTime = SimClock.getTime();
 
@@ -748,7 +772,7 @@ public class DTNHost implements Comparable<DTNHost> {
                     entry.stateIndicator = 2;
 
                     for(Application app :router.getApplications(APP_ID)){
-                        app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.REGULAR_HOST, 1000);
+                        app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.REGULAR_HOST, 1000, -1.0);
                     }
                 }
             }
@@ -777,7 +801,7 @@ public class DTNHost implements Comparable<DTNHost> {
         if(demo_case >= 2 && existPendingRequests()) { //if there is a meaning into sending requests to new hotspots.
             for(RequestBufferEntry entry : requestBuffer) {
                 if(entry.stateIndicator != 1) {
-                    transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID);
+                    transmit_hotspot = new Transmit_WiFi(this, entry.pingSize, entry.requestedWebPageNumber, entry.APP_ID, entry.pageRequestCreationTime);
                     if(entry.stateIndicator == 0)
                         entry.curTime = SimClock.getTime();
 
@@ -785,7 +809,7 @@ public class DTNHost implements Comparable<DTNHost> {
                     entry.stateIndicator = 2;
 
                     for(Application app :router.getApplications(APP_ID)){
-                        app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.WIFI_HOTSPOT, 1000);
+                        app.sendEventToListeners("SentPing", null, this, -1.0, TypeOfHost.WIFI_HOTSPOT, 1000, -1.0);
                     }
                 }
             }
@@ -1047,6 +1071,21 @@ public class DTNHost implements Comparable<DTNHost> {
 			}
 		}
 		updateTransmit(false);		//To enable timer
+
+        //ArrayList<DTNHost.TypeOfDestinationEntry> typeOfDestinations = host.getTypesOfDestionations();
+        for(TypeOfDestinationEntry dest : typesOfDestinations) {
+            if(!dest.isCounted()) {
+
+                for(Application app :router.getApplications(APP_ID)){
+                    app.sendEventToListeners("SentPing", null, this, -1.0, dest.getTypeOfDestionation(), 1000, -1.0);
+                }
+
+                dest.setCounted(true);
+            }
+        }
+
+
+
 		this.router.update();
 	}
 

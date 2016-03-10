@@ -8,8 +8,8 @@ import core.DTNHost;
  */
 public class Transmit_Pedestrian extends Transmit {
 
-    public Transmit_Pedestrian(DTNHost host, int pingSize, int webPageNumber, String APP_ID){
-        super(host, pingSize, webPageNumber, APP_ID);
+    public Transmit_Pedestrian(DTNHost host, int pingSize, int webPageNumber, String APP_ID, double pageRequestCreationTime){
+        super(host, pingSize, webPageNumber, APP_ID, pageRequestCreationTime);
     }
 
     @Override

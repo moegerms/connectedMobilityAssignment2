@@ -7,7 +7,6 @@ package report;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeMap;
 
@@ -24,7 +23,8 @@ import core.DTNHost;
  */
 public class PingAppReporter extends Report implements ApplicationListener {
 
-	private ArrayList<Double> responseTimes;
+	private ArrayList<Double> roundTripTimes;
+    private ArrayList<Double> responseTimes;
     private TreeMap<Integer,Long> individualNumOfRequestsWiFi;
     private TreeMap<Integer,Double> individualShareRequestsWiFi;
     private TreeMap<Integer,Long> individualNumOfRequestsCellular;
@@ -56,6 +56,7 @@ public class PingAppReporter extends Report implements ApplicationListener {
 
 	private int pingsSent=0, pingsReceived=0;
 	private int pongsSent=0, pongsReceived=0;
+    private int foundInLocalCache=0;
     private long totalBytesReceived = 0;
     private long totalBytesSent = 0;
 
@@ -77,7 +78,8 @@ public class PingAppReporter extends Report implements ApplicationListener {
 	public PingAppReporter() {
 		super();
 
-		responseTimes = new ArrayList<Double>();
+		roundTripTimes = new ArrayList<Double>();
+        responseTimes = new ArrayList<Double>();
         individualNumOfRequestsWiFi = new TreeMap<Integer,Long>();
         individualShareRequestsWiFi = new TreeMap<Integer,Double>();
         individualNumOfRequestsPedestrian = new TreeMap<Integer,Long>();
@@ -108,11 +110,14 @@ public class PingAppReporter extends Report implements ApplicationListener {
 	}
 
 	public void gotEvent(String event, Object params, Application app,
-			DTNHost host, double responseTime, DTNHost.TypeOfHost typeOfOtherHost, int messageSize) {
+			DTNHost host, double roundTripTime, DTNHost.TypeOfHost typeOfOtherHost, int messageSize, double responseTime) {
 		// Check that the event is sent by correct application type
 		if (!(app instanceof PingApplication)) return;
 
 		// Increment the counters based on the event type
+        if (event.equalsIgnoreCase("InLocalCache")) {
+            foundInLocalCache++;
+        }
 		if (event.equalsIgnoreCase("GotPing")) {
 			pingsReceived++;
 		}
@@ -122,6 +127,7 @@ public class PingAppReporter extends Report implements ApplicationListener {
 		if (event.equalsIgnoreCase("GotPong")) {
 			pongsReceived++;
             totalBytesReceived += messageSize;
+            roundTripTimes.add(roundTripTime);
             responseTimes.add(responseTime);
 
             switch(typeOfOtherHost) {
@@ -257,7 +263,7 @@ public class PingAppReporter extends Report implements ApplicationListener {
     }
 
 	private double getMedianDouble(ArrayList<Double> values) {
-        //Collections.sort(responseTimes);
+        //Collections.sort(roundTripTimes);
 
         int medianIndex = values.size()/2;
 
@@ -265,7 +271,7 @@ public class PingAppReporter extends Report implements ApplicationListener {
     }
 
     private long getMedian(ArrayList<Long> values) {
-        //Collections.sort(responseTimes);
+        //Collections.sort(roundTripTimes);
 
         int medianIndex = values.size()/2;
 
@@ -273,7 +279,7 @@ public class PingAppReporter extends Report implements ApplicationListener {
     }
 
 	private double get95TileDouble(ArrayList<Double> values) {
-        //Collections.sort(responseTimes);
+        //Collections.sort(roundTripTimes);
 
         int _95PercentileIndex = (int)(values.size() * 0.95);
 
@@ -281,7 +287,7 @@ public class PingAppReporter extends Report implements ApplicationListener {
 	}
 
     private long get95Tile(ArrayList<Long> values) {
-        //Collections.sort(responseTimes);
+        //Collections.sort(roundTripTimes);
 
         int _95PercentileIndex = (int)(values.size() * 0.95);
 
@@ -465,28 +471,50 @@ public class PingAppReporter extends Report implements ApplicationListener {
 			"\npong delivery probability: " + format(pongProb) +
 			"\nping/pong success probability: " + format(successProb) + "\n" +
             "\nbytes sent: " + this.totalBytesSent +
-            "\nbytes received: " + this.totalBytesReceived + "\n"
+            "\nbytes received: " + this.totalBytesReceived +
+            "\npages found in local cache: " + this.foundInLocalCache + "\n"
 			;
 
 		write(statsText);
 
-        if(responseTimes.size() > 0) {
+        if(roundTripTimes.size() > 0) {
 
-            /* Response Times stats */
-            write("\nResponse Times Statistics (by the way, Response Time is actually the RTT)\n" + "--------------------------------\n");
+            /* Round Trip Times stats */
+            write("\nRound Trip Times Statistics\n" + "--------------------------------\n");
 
-            Collections.sort(responseTimes);
+            Collections.sort(roundTripTimes);
 
-            statsText = "mean response time: " + this.getMeanDouble(responseTimes) + " secs" +
-                      "\nmedian response time: " + this.getMedianDouble(responseTimes) + " secs" +
-                      "\n95%-tile response time: " + this.get95TileDouble(responseTimes) + " secs" +
-                      "\nmin response time: " + this.getMinDouble(responseTimes) + " secs" +
-                      "\nmax response time: " + this.getMaxDouble(responseTimes) + " secs\n"
+            statsText = "mean round trip time: " + this.getMeanDouble(roundTripTimes) + " secs" +
+                      "\nmedian round trip time: " + this.getMedianDouble(roundTripTimes) + " secs" +
+                      "\n95%-tile round trip time: " + this.get95TileDouble(roundTripTimes) + " secs" +
+                      "\nmin round trip time: " + this.getMinDouble(roundTripTimes) + " secs" +
+                      "\nmax round trip time: " + this.getMaxDouble(roundTripTimes) + " secs\n"
                     ;
 
             write(statsText);
 
         }
+
+
+        if(responseTimes.size() > 0) {
+
+            /* Response Times stats */
+            write("\nResponse Times Statistics\n" + "--------------------------------\n");
+
+            Collections.sort(responseTimes);
+
+            statsText = "mean response time: " + this.getMeanDouble(responseTimes) + " secs" +
+                    "\nmedian response time: " + this.getMedianDouble(responseTimes) + " secs" +
+                    "\n95%-tile response time: " + this.get95TileDouble(responseTimes) + " secs" +
+                    "\nmin response time: " + this.getMinDouble(responseTimes) + " secs" +
+                    "\nmax response time: " + this.getMaxDouble(responseTimes) + " secs\n"
+            ;
+
+            write(statsText);
+        }
+
+
+
 
         /* Offloading stats - Overall - Requests*/
         write("\nOffloading Statistics (Overall) - Requests\n" + "--------------------------------\n");

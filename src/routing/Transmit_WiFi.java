@@ -7,8 +7,8 @@ import core.*;
  */
 public class Transmit_WiFi extends Transmit {
 
-    public Transmit_WiFi(DTNHost host, int pingSize, int webPageNumber, String APP_ID){
-        super(host, pingSize, webPageNumber, APP_ID);
+    public Transmit_WiFi(DTNHost host, int pingSize, int webPageNumber, String APP_ID, double pageRequestCreationTime){
+        super(host, pingSize, webPageNumber, APP_ID, pageRequestCreationTime);
     }
 
     @Override

@@ -231,7 +231,7 @@ public abstract class Report {
 	 * @param txt Line to write
 	 * @see #setPrefix(String)
 	 */
-	boolean onlyNumbers = true;
+	boolean onlyNumbers = false;
 	protected void write(String txt) {
 		if (out == null) {
 			init();
@@ -239,7 +239,7 @@ public abstract class Report {
 		if(onlyNumbers){		//reduce string
 			//txt = "a 123 b 323";
 			txt = extractNumber(txt);
-			System.out.println(txt);
+			//System.out.println(txt);
 		}
 		out.println(prefix + txt);
 	}
