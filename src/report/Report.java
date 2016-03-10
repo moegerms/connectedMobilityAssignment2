@@ -231,11 +231,42 @@ public abstract class Report {
 	 * @param txt Line to write
 	 * @see #setPrefix(String)
 	 */
+	boolean onlyNumbers = true;
 	protected void write(String txt) {
 		if (out == null) {
 			init();
 		}
+		if(onlyNumbers){		//reduce string
+			//txt = "a 123 b 323";
+			txt = extractNumber(txt);
+			System.out.println(txt);
+		}
 		out.println(prefix + txt);
+	}
+
+	private String extractNumber(String txt){
+		//System.out.println(txt);
+		for (int i = 0; i < txt.length(); i++) {
+			if (Character.isDigit(txt.charAt(i)) && !Character.isWhitespace(txt.charAt(i)) && !Character.isLetter(txt.charAt(i))) {
+				//find end of number
+
+				for (int j = i; j < txt.length(); j++) {
+					if (Character.isWhitespace(txt.charAt(j)) || String.valueOf(txt.charAt(j)).equals("%") || (j == txt.length() -1)){
+						//end of number
+						//  run on substring
+						String newTxt = "";
+						if(j < txt.length()-1) {
+							newTxt = extractNumber(txt.substring(j));
+						}
+						newTxt = txt.substring(i,j) + "\n" + newTxt;
+						return newTxt;
+					}
+
+				}
+				break;
+			}
+		}
+		return "";
 	}
 
 	/**
