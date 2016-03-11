@@ -114,7 +114,10 @@ public class PingAppReporter extends Report implements ApplicationListener {
 		// Check that the event is sent by correct application type
 		if (!(app instanceof PingApplication)) return;
 
-		// Increment the counters based on the event type
+        if (isWarmup())
+            return;
+
+        // Increment the counters based on the event type
         if (event.equalsIgnoreCase("InLocalCache")) {
             foundInLocalCache++;
         }

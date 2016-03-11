@@ -11,7 +11,7 @@ Scenario.updateInterval = 0.1
 #Run 10 simulation runs for 12 hours each per scenario (1h warmup, which has to be excluded)
 
 #Scenario.endTime = 10000000
-Scenario.endTime = 43200
+Scenario.endTime = 46800
 #Scenario.endTime = 4000
 
 ## Interface-specific settings:
@@ -123,8 +123,8 @@ Group6.nrofHosts = 100
 # Set Ping app for all nodes
 Group6.nrofApplications = 1
 Group6.application1 = pingApp
-Group6.demo_case = 5
-Group6.caching = false
+Group6.demo_case = 6
+Group6.caching = true
 Group6.cacheEntries = 10
 
 # group7 (pedestrians) specific settings
@@ -133,8 +133,8 @@ Group7.nrofHosts = 100
 # Set Ping app for all nodes
 Group7.nrofApplications = 1
 Group7.application1 = pingApp
-Group7.demo_case = 5
-Group7.caching = false
+Group7.demo_case = 6
+Group7.caching = true
 Group7.cacheEntries = 10
 
 
@@ -425,7 +425,7 @@ MapBasedMovement.mapFile4 = data/shops.wkt
 # how many reports to load
 Report.nrofReports = 2
 # length of the warm up period (simulated seconds)
-Report.warmup = 0
+Report.warmup = 3600
 # default directory of reports (can be overridden per Report with output setting)
 Report.reportDir = reports/
 # Report classes to load

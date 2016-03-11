@@ -231,7 +231,7 @@ public abstract class Report {
 	 * @param txt Line to write
 	 * @see #setPrefix(String)
 	 */
-	boolean onlyNumbers = false;
+	boolean onlyNumbers = true;
 	protected void write(String txt) {
 		if (out == null) {
 			init();
